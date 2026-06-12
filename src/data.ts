@@ -146,7 +146,7 @@ export const FEATURED_PROJECT: Project = {
   tech: ["Python", "Pandas", "BeautifulSoup", "Power BI", "ETL Pipelines", "Data Cleaning"],
   role: "Lead Analytics Architect",
   githubUrl: "https://github.com/mittapellisaikrishna/ipl-2025-franchise-roi",
-  liveUrl: "https://mittapellisaikrishna.github.io/data-analyst-portfolio/",
+  liveUrl: "https://ipl-2025-franchise-roi-nlbxp6ygeaiqv3mtqtmj6v.streamlit.app/?utm_source=chatgpt.com",
   docUrl: "https://github.com/mittapellisaikrishna/ipl-2025-franchise-roi/blob/main/TECHNICAL_DOCUMENTATION.md",
   metrics: [
     { label: "Total Matches Scraped", value: "74", trend: "100% coverage" },
