@@ -22,7 +22,7 @@ import {
   LineChart,
   Code
 } from 'lucide-react';
-import { PERSONAL_INFO, TIMELINE_DATA, ADDITIONAL_PROJECTS, CERTIFICATIONS } from './data';
+import { PERSONAL_INFO, TIMELINE_DATA, ADDITIONAL_PROJECTS, CERTIFICATIONS, FEATURED_PROJECT } from './data';
 import { InteractiveGlobe } from './components/InteractiveGlobe';
 import { SkillsGalaxy } from './components/SkillsGalaxy';
 import { ProjectArchitecture } from './components/ProjectArchitecture';
@@ -407,7 +407,7 @@ export default function App() {
 
             <div className="flex items-center gap-3">
               <a 
-                href="https://github.com/mittapellisaikrishna/ipl-2025-analytics"
+                href={FEATURED_PROJECT.githubUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-xs font-mono font-bold text-slate-300"
@@ -417,7 +417,7 @@ export default function App() {
               </a>
 
               <a 
-                href="https://github.com/mittapellisaikrishna/ipl-2025-analytics#live-dashboard"
+                href={FEATURED_PROJECT.liveUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-mono font-bold text-blue-400"
@@ -427,7 +427,7 @@ export default function App() {
               </a>
 
               <a 
-                href="https://github.com/mittapellisaikrishna/ipl-2025-analytics/blob/main/TECHNICAL_DOCUMENTATION.md"
+                href={FEATURED_PROJECT.docUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg text-xs font-mono font-bold text-amber-500 animate-pulse"

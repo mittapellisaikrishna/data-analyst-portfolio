@@ -145,9 +145,9 @@ export const FEATURED_PROJECT: Project = {
   solution: "Constructed a comprehensive automated ETL framework in Python using BeautifulSoup and Request throttling. The raw text of 74 match scorecards was extracted, put into an automated sanitization and type-normalization engine, and modeled into robust facts and dimensions tables. This structured dataset yields high-fidelity metrics displayed in Power BI.",
   tech: ["Python", "Pandas", "BeautifulSoup", "Power BI", "ETL Pipelines", "Data Cleaning"],
   role: "Lead Analytics Architect",
-  githubUrl: "https://github.com/mittapellisaikrishna/ipl-2025-analytics",
-  liveUrl: "https://github.com/mittapellisaikrishna/ipl-2025-analytics#live-dashboard",
-  docUrl: "https://github.com/mittapellisaikrishna/ipl-2025-analytics/blob/main/TECHNICAL_DOCUMENTATION.md",
+  githubUrl: "https://github.com/mittapellisaikrishna/ipl-2025-franchise-roi",
+  liveUrl: "https://mittapellisaikrishna.github.io/data-analyst-portfolio/",
+  docUrl: "https://github.com/mittapellisaikrishna/ipl-2025-franchise-roi/blob/main/TECHNICAL_DOCUMENTATION.md",
   metrics: [
     { label: "Total Matches Scraped", value: "74", trend: "100% coverage" },
     { label: "Active Players Modeled", value: "240+", trend: "Static rosters verified" },
