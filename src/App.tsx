@@ -641,38 +641,58 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {CERTIFICATIONS.map((cert) => (
-              <div 
-                key={cert.id}
-                className="p-5 rounded-3xl bg-[rgba(13,17,23,0.85)] border border-[rgba(59,130,246,0.15)] hover:border-blue-500/20 hover:shadow-lg hover:shadow-black/30 flex items-start gap-4 transition-all duration-300 relative group overflow-hidden"
-              >
-                {/* Background colored glow spotlight */}
+            {CERTIFICATIONS.map((cert) => {
+              const CardContent = (
+                <>
+                  {/* Background colored glow spotlight */}
+                  <div 
+                    className="absolute -top-10 -right-10 w-24 h-24 rounded-full transition-opacity opacity-5 pointer-events-none group-hover:opacity-20 duration-500"
+                    style={{ background: `radial-gradient(circle, ${cert.glowColor} 0%, transparent 70%)` }}
+                  ></div>
+
+                  {/* Left Glowing emblem badge indicator */}
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cert.badgeColor} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300 relative`}>
+                    <Award className="w-5 h-5 text-slate-950" />
+                    
+                    {/* Pulsing ring indicator around badge */}
+                    <span className="absolute inset-0 rounded-xl border border-white/20 animate-pulse"></span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[8px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800 uppercase">
+                      {cert.issuer}
+                    </span>
+                    <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-400 transition-colors leading-tight">
+                      {cert.name}
+                    </h4>
+                    <span className="text-[9px] font-mono text-slate-500 block">
+                      Secured: {cert.date}
+                    </span>
+                  </div>
+                </>
+              );
+
+              const cardClass = "p-5 rounded-3xl bg-[rgba(13,17,23,0.85)] border border-[rgba(59,130,246,0.15)] hover:border-blue-500/20 hover:shadow-lg hover:shadow-black/30 flex items-start gap-4 transition-all duration-300 relative group overflow-hidden text-left w-full block";
+
+              return cert.credentialUrl ? (
+                <a 
+                  key={cert.id}
+                  href={cert.credentialUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cardClass}
+                >
+                  {CardContent}
+                </a>
+              ) : (
                 <div 
-                  className="absolute -top-10 -right-10 w-24 h-24 rounded-full transition-opacity opacity-5 pointer-events-none group-hover:opacity-20 duration-500"
-                  style={{ background: `radial-gradient(circle, ${cert.glowColor} 0%, transparent 70%)` }}
-                ></div>
-
-                {/* Left Glowing emblem badge indicator */}
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cert.badgeColor} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300 relative`}>
-                  <Award className="w-5 h-5 text-slate-950" />
-                  
-                  {/* Pulsing ring indicator around badge */}
-                  <span className="absolute inset-0 rounded-xl border border-white/20 animate-pulse"></span>
+                  key={cert.id}
+                  className={cardClass}
+                >
+                  {CardContent}
                 </div>
-
-                <div className="space-y-1">
-                  <span className="text-[8px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800 uppercase">
-                    {cert.issuer}
-                  </span>
-                  <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-400 transition-colors leading-tight">
-                    {cert.name}
-                  </h4>
-                  <span className="text-[9px] font-mono text-slate-500 block">
-                    Secured: {cert.date}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
         </section>

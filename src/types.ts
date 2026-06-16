@@ -41,4 +41,5 @@ export interface Certification {
   badgeColor: string;
   glowColor: string;
   date: string;
+  credentialUrl?: string;
 }

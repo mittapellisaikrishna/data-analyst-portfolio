@@ -217,7 +217,8 @@ export const CERTIFICATIONS: Certification[] = [
     issuer: "Cisco Networking Academy",
     badgeColor: "from-cyan-500 to-blue-600",
     glowColor: "rgba(6, 182, 212, 0.4)",
-    date: "2024"
+    date: "2024",
+    credentialUrl: "https://www.credly.com/badges/44de4cdf-ff23-438f-a3bb-0c79a85a2ee9"
   },
   {
     id: "cert-cyber",
@@ -225,7 +226,8 @@ export const CERTIFICATIONS: Certification[] = [
     issuer: "Google",
     badgeColor: "from-blue-600 to-indigo-600",
     glowColor: "rgba(37, 99, 235, 0.4)",
-    date: "2024"
+    date: "2024",
+    credentialUrl: "https://www.coursera.org/account/accomplishments/verify/AGAN5VB3YVFR"
   },
   {
     id: "cert-aws-found",
@@ -241,7 +243,8 @@ export const CERTIFICATIONS: Certification[] = [
     issuer: "Amazon Web Services",
     badgeColor: "from-yellow-500 to-amber-600",
     glowColor: "rgba(217, 119, 6, 0.4)",
-    date: "2025"
+    date: "2025",
+    credentialUrl: "https://www.credly.com/badges/a04d7b5e-6c5a-4714-80ae-da0442160f1d/linked_in_profile"
   },
   {
     id: "cert-proj-mgt",
@@ -249,6 +252,7 @@ export const CERTIFICATIONS: Certification[] = [
     issuer: "Microsoft & LinkedIn",
     badgeColor: "from-teal-500 to-emerald-600",
     glowColor: "rgba(20, 184, 166, 0.4)",
-    date: "2024"
+    date: "2024",
+    credentialUrl: "https://www.linkedin.com/learning/certificates/23bfb06a35003c19c590fb0ed493c37d3fac7ab0c642c59741d594338138a7e1"
   }
 ];
