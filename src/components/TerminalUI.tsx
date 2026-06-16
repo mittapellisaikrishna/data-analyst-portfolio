@@ -77,11 +77,11 @@ export const TerminalUI: React.FC = () => {
           { text: "SECURING LEDGER DOWNLOAD PROTOCOL...", type: 'success' },
           { text: "  -> Redirecting payload request to cloud storage...", type: 'output' },
           { text: "  [CLICK LINK] Download Resume: saikrishna_mittapelli_resume.pdf", type: 'success' },
-          { text: "  URL: https://drive.google.com/file/d/18Ou5RG1NGokNNK33YAbNVNsAIIvYzklO/view?usp=drive_link", type: 'output' }
+          { text: "  URL: https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing", type: 'output' }
         );
         // Custom window event dispatch fallback
         try {
-          window.open('https://drive.google.com/file/d/18Ou5RG1NGokNNK33YAbNVNsAIIvYzklO/view?usp=drive_link', '_blank');
+          window.open('https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing', '_blank');
         } catch(e){}
         break;
 
