@@ -217,7 +217,7 @@ export const CERTIFICATIONS: Certification[] = [
     issuer: "Cisco Networking Academy",
     badgeColor: "from-cyan-500 to-blue-600",
     glowColor: "rgba(6, 182, 212, 0.4)",
-    date: "2024",
+    date: "2026",
     credentialUrl: "https://www.credly.com/badges/44de4cdf-ff23-438f-a3bb-0c79a85a2ee9"
   },
   {
@@ -228,14 +228,6 @@ export const CERTIFICATIONS: Certification[] = [
     glowColor: "rgba(37, 99, 235, 0.4)",
     date: "2024",
     credentialUrl: "https://www.coursera.org/account/accomplishments/verify/AGAN5VB3YVFR"
-  },
-  {
-    id: "cert-aws-found",
-    name: "AWS Academy Cloud Foundations",
-    issuer: "Amazon Web Services",
-    badgeColor: "from-orange-500 to-amber-500",
-    glowColor: "rgba(249, 115, 22, 0.4)",
-    date: "2024"
   },
   {
     id: "cert-aws-arch",
@@ -252,7 +244,7 @@ export const CERTIFICATIONS: Certification[] = [
     issuer: "Microsoft & LinkedIn",
     badgeColor: "from-teal-500 to-emerald-600",
     glowColor: "rgba(20, 184, 166, 0.4)",
-    date: "2024",
+    date: "2025",
     credentialUrl: "https://www.linkedin.com/learning/certificates/23bfb06a35003c19c590fb0ed493c37d3fac7ab0c642c59741d594338138a7e1"
   }
 ];
