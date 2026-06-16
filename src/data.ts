@@ -212,6 +212,14 @@ export const ADDITIONAL_PROJECTS: Project[] = [
 
 export const CERTIFICATIONS: Certification[] = [
   {
+    id: "cert-cisco-da",
+    name: "Data Analytics Essentials",
+    issuer: "Cisco Networking Academy",
+    badgeColor: "from-cyan-500 to-blue-600",
+    glowColor: "rgba(6, 182, 212, 0.4)",
+    date: "2024"
+  },
+  {
     id: "cert-cyber",
     name: "Foundations of Cybersecurity",
     issuer: "Google",
