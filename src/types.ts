@@ -22,6 +22,10 @@ export interface Project {
   liveUrl?: string;
   docUrl?: string;
   featured?: boolean;
+  dataset?: string;
+  features?: string[];
+  insights?: string[];
+  impact?: string[];
 }
 
 export interface TimelineEvent {
