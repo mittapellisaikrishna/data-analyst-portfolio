@@ -217,7 +217,6 @@ export const TerminalUI: React.FC = () => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          autoFocus
           className="flex-1 bg-transparent border-none outline-none text-slate-200 text-xs font-mono p-0 focus:ring-0"
           placeholder="input directive code..."
           maxLength={50}
