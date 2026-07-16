@@ -7,7 +7,7 @@ interface Point3D {
   size: number;
   color: string;
   isSpecial?: boolean;
-  label?: string;
+  label?: string; 
 }
 
 export const InteractiveGlobe: React.FC = () => {
