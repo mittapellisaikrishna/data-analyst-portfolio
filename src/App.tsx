@@ -17,22 +17,46 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
-  LineChart,
-  Code
+  Brain,
+  Cloud,
+  Code,
+  Wrench,
+  Layers,
+  LineChart
 } from 'lucide-react';
 import { PERSONAL_INFO, TIMELINE_DATA, ADDITIONAL_PROJECTS, CERTIFICATIONS, FEATURED_PROJECT } from './data';
 
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [subheadingIdx, setSubheadingIdx] = useState(0);
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const subheadings = ["Data Analyst", "AI Developer", "Machine Learning Engineer"];
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 30);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    const interval = setInterval(() => {
+      setSubheadingIdx(prev => (prev + 1) % subheadings.length);
+    }, 2800);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(interval);
+    };
   }, []);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -45,49 +69,65 @@ export default function App() {
     setExpandedProjects(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const allProjects = [FEATURED_PROJECT, ...ADDITIONAL_PROJECTS];
-
-  const skillCategories = [
+  const skillGroups = [
     {
-      name: "Programming",
-      skills: ["SQL", "Python", "R", "MySQL", "PostgreSQL"]
+      category: "Data Science & AI",
+      icon: <Brain className="w-4 h-4 text-[#4F9DFF]" />,
+      skills: ["SQL", "Python", "R", "Machine Learning", "Statistics", "Data Modeling"]
     },
     {
-      name: "Visualization",
-      skills: ["Power BI", "Tableau", "Excel"]
+      category: "ETL & Libraries",
+      icon: <Layers className="w-4 h-4 text-[#7C3AED]" />,
+      skills: ["Pandas", "NumPy", "Scikit Learn", "ETL Pipelines", "Data Cleaning"]
     },
     {
-      name: "Libraries & ETL",
-      skills: ["Pandas", "NumPy", "Scikit Learn", "Matplotlib", "Seaborn", "ETL", "Data Cleaning"]
+      category: "BI & Visuals",
+      icon: <LineChart className="w-4 h-4 text-emerald-400" />,
+      skills: ["Power BI", "Tableau", "Excel", "Matplotlib", "Seaborn"]
     },
     {
-      name: "Methodology",
-      skills: ["Statistics", "Machine Learning", "Data Modeling"]
+      category: "Databases & Tools",
+      icon: <Wrench className="w-4 h-4 text-amber-500" />,
+      skills: ["MySQL", "PostgreSQL", "Git & GitHub", "VS Code", "Jupyter Notebook"]
     }
   ];
 
+  const allProjects = [FEATURED_PROJECT, ...ADDITIONAL_PROJECTS];
+
   return (
-    <div className="min-h-screen text-[#F8FAFC] flex flex-col font-sans relative selection:bg-[#8AB4F8]/30 selection:text-[#8AB4F8]">
+    <div 
+      className="min-h-screen text-[#F8FAFC] flex flex-col font-sans relative selection:bg-[#4F9DFF]/30 selection:text-[#4F9DFF]"
+      onMouseMove={handleMouseMove}
+    >
       
-      {/* Subtle radial background glow behind hero section */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] hero-radial-glow z-0"></div>
+      {/* Background Aurora Spots */}
+      <div className="absolute top-[10%] left-[-15%] w-[60%] h-[50%] aurora-blur-1 rounded-full pointer-events-none z-0"></div>
+      <div className="absolute top-[40%] right-[-15%] w-[60%] h-[50%] aurora-blur-2 rounded-full pointer-events-none z-0"></div>
+
+      {/* Dynamic Cursor Light Overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-10 opacity-30"
+        style={{
+          background: `radial-gradient(circle 400px at ${mousePos.x}px ${mousePos.y}px, rgba(79, 157, 255, 0.06), transparent 80%)`
+        }}
+      ></div>
 
       {/* ================================= NAVBAR ================================= */}
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-        <nav className={`w-full max-w-3xl flex items-center justify-between px-6 py-3 rounded-full transition-all duration-300 ${
+        <nav className={`floating-dock flex items-center justify-between px-6 py-3 rounded-full transition-all duration-500 ${
           isScrolled 
-            ? 'bg-[#0B0F19]/90 backdrop-blur-md border border-white/10 shadow-lg shadow-black/20' 
-            : 'bg-white/5 backdrop-blur-lg border border-white/5'
+            ? 'w-full max-w-2xl py-2.5 bg-[#0A0A0A]/90 border-white/10 shadow-2xl' 
+            : 'w-full max-w-3xl bg-white/5 border-white/5'
         }`}>
           <div 
             onClick={() => scrollToSection('hero')} 
-            className="font-display font-bold text-xs sm:text-sm tracking-tight text-[#8AB4F8] hover:text-[#AECBFA] transition cursor-pointer flex items-center gap-2"
+            className="font-display font-bold text-xs tracking-tight text-[#4F9DFF] hover:text-[#7C3AED] transition cursor-pointer flex items-center gap-2"
           >
             <Database className="w-4 h-4" />
             <span>SAI KRISHNA MITTAPELLI</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-5 text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+          <div className="hidden sm:flex items-center gap-5 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">
             <button onClick={() => scrollToSection('about')} className="hover:text-[#F8FAFC] transition cursor-pointer">About</button>
             <button onClick={() => scrollToSection('projects')} className="hover:text-[#F8FAFC] transition cursor-pointer">Projects</button>
             <button onClick={() => scrollToSection('skills')} className="hover:text-[#F8FAFC] transition cursor-pointer">Skills</button>
@@ -99,206 +139,270 @@ export default function App() {
             href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-1.5 text-xs font-semibold rounded-full bg-white/10 hover:bg-[#8AB4F8]/20 hover:text-[#8AB4F8] border border-white/10 hover:border-[#8AB4F8]/20 transition-all"
+            className="px-4 py-1.5 text-xs font-semibold rounded-full bg-[#4F9DFF]/10 hover:bg-[#4F9DFF]/25 text-[#4F9DFF] border border-[#4F9DFF]/20 hover:border-[#4F9DFF]/40 transition-all shadow-md"
           >
-            Resume
+            CV
           </a>
         </nav>
       </div>
 
       {/* ================================= MAIN CONTAINER ================================= */}
-      <main id="hero" className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-8 pt-28 md:pt-36 pb-20 space-y-28 md:space-y-40 relative z-10">
+      <main id="hero" className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-8 pt-28 md:pt-36 pb-20 space-y-36 md:space-y-48 relative z-20">
 
         {/* ================================= HERO SECTION ================================= */}
-        <section className="text-center max-w-3xl mx-auto space-y-6 animate-blurReveal">
-          <div className="space-y-3">
-            <span className="text-[#8AB4F8] font-mono text-xs tracking-widest uppercase block">
-              Data Analyst Portfolio
-            </span>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-display font-extrabold tracking-tight leading-none text-[#F8FAFC]">
-              Sai Krishna Mittapelli
-            </h1>
-            <p className="text-lg sm:text-xl font-medium text-[#94A3B8] font-display max-w-xl mx-auto">
-              Data Analyst | SQL | Python | Power BI
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Text Detail */}
+          <div className="lg:col-span-7 space-y-6 text-left animate-blurReveal">
+            <div className="space-y-3">
+              <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block font-semibold">
+                [ Decision Intelligence Engine ]
+              </span>
+              <h1 className="text-5xl sm:text-6xl md:text-7.5xl font-display font-extrabold tracking-tight leading-none text-[#F8FAFC]">
+                Hi, I&apos;m <br />
+                <span className="bg-gradient-to-r from-white via-slate-350 to-[#4F9DFF] bg-clip-text text-transparent">
+                  Sai Krishna Mittapelli
+                </span>
+              </h1>
+              
+              {/* Rotating Subtitles */}
+              <div className="h-8 overflow-hidden font-display text-lg sm:text-xl font-medium text-[#94A3B8]">
+                <div 
+                  className="transition-transform duration-500 ease-in-out"
+                  style={{ transform: `translateY(-${subheadingIdx * 32}px)` }}
+                >
+                  {subheadings.map((sh, idx) => (
+                    <div key={idx} className="h-8 flex items-center text-[#4F9DFF] font-mono tracking-wide uppercase font-semibold">
+                      &gt; {sh}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-base sm:text-lg text-[#94A3B8] leading-relaxed max-w-xl font-light">
+              Transforming raw, unstructured business data into key operational indicators and high-fidelity dashboards to optimize decision velocity.
             </p>
-          </div>
 
-          <p className="text-base sm:text-lg text-[#94A3B8] leading-relaxed max-w-xl mx-auto font-light">
-            Transforming raw data into meaningful business insights through analytics and visualization.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <button 
-              onClick={() => scrollToSection('projects')} 
-              className="px-6 py-2.5 text-sm font-semibold btn-primary flex items-center gap-2 cursor-pointer"
-            >
-              <span>View Projects</span>
-              <ChevronRight className="w-4 h-4 text-slate-900" />
-            </button>
-            <a 
-              href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
-              target="_blank"
-              rel="noreferrer"
-              className="px-6 py-2.5 text-sm font-semibold btn-secondary flex items-center gap-2"
-            >
-              <FileText className="w-4.5 h-4.5 text-[#94A3B8]" />
-              <span>Download Resume</span>
-            </a>
-            
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <button 
+                onClick={() => scrollToSection('projects')} 
+                className="px-6 py-3 text-xs font-bold uppercase tracking-wider btn-apple-primary flex items-center gap-2 cursor-pointer"
+              >
+                <span>View Projects</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
               <a 
-                href="https://www.linkedin.com/in/saikrishna-mittapelli/"
+                href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
                 target="_blank"
                 rel="noreferrer"
-                className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:border-[#8AB4F8]/30 hover:text-[#8AB4F8] transition"
-                title="LinkedIn Profile"
+                className="px-6 py-3 text-xs font-bold uppercase tracking-wider btn-apple-secondary flex items-center gap-2"
               >
-                <Linkedin className="w-4.5 h-4.5" />
+                <FileText className="w-4.5 h-4.5" />
+                <span>Resume</span>
               </a>
-              <a 
-                href="https://github.com/mittapellisaikrishna"
-                target="_blank"
-                rel="noreferrer"
-                className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:border-[#8AB4F8]/30 hover:text-[#8AB4F8] transition"
-                title="GitHub Profile"
-              >
-                <Github className="w-4.5 h-4.5" />
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* ================================= ABOUT SECTION ================================= */}
-        <section id="about" className="space-y-10 scroll-mt-28">
-          <div className="space-y-2 text-center max-w-2xl mx-auto">
-            <span className="text-[#8AB4F8] font-mono text-xs tracking-widest uppercase block">01 / Profile Overview</span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold">About Me</h2>
-          </div>
-
-          <div className="glass-panel p-6 sm:p-8 max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            {/* Left Column - Minimal Visual representation */}
-            <div className="md:col-span-4 flex justify-center">
-              <div className="w-32 h-32 rounded-full border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden group">
-                <Database className="w-12 h-12 text-[#8AB4F8]/80 group-hover:scale-110 transition-transform duration-500" />
-              </div>
-            </div>
-
-            {/* Right Column - Profile Ledger */}
-            <div className="md:col-span-8 space-y-4">
-              <div>
-                <p className="text-lg font-bold font-display text-[#F8FAFC]">Sai Krishna Mittapelli</p>
-                <p className="text-xs sm:text-sm text-[#94A3B8] font-light leading-relaxed mt-1">
-                  Specializing in database queries, ETL parsing pipelines, and corporate Power BI reports. I turn fragmented transactional datasets into operational KPI structures to optimize churn metrics, turnover speed, and auction value margins.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/5 text-xs">
-                <div className="space-y-0.5">
-                  <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Education</span>
-                  <span className="text-[#F8FAFC] font-light truncate block">B.Tech SR University (2022-26)</span>
-                </div>
-                <div className="space-y-0.5">
-                  <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Location</span>
-                  <span className="text-[#F8FAFC] font-light">Hyderabad, India</span>
-                </div>
-                <div className="space-y-0.5">
-                  <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Availability</span>
-                  <span className="text-emerald-400 font-medium">Open for Offers</span>
-                </div>
-                <div className="space-y-0.5">
-                  <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Specialization</span>
-                  <span className="text-[#F8FAFC] font-light">Data Analytics &amp; ETL</span>
-                </div>
-              </div>
-
-              <div className="pt-2">
+              
+              <div className="flex gap-2">
                 <a 
-                  href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
+                  href="https://www.linkedin.com/in/saikrishna-mittapelli/"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#8AB4F8] hover:text-[#AECBFA] transition"
+                  className="p-3 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] transition shadow-md"
+                  title="LinkedIn"
                 >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>Verify Experience CV</span>
-                  <ArrowUpRight className="w-3 h-3" />
+                  <Linkedin className="w-4.5 h-4.5" />
+                </a>
+                <a 
+                  href="https://github.com/mittapellisaikrishna"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-3 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] transition shadow-md"
+                  title="GitHub"
+                >
+                  <Github className="w-4.5 h-4.5" />
                 </a>
               </div>
             </div>
           </div>
+
+          {/* Right Floating Spatial Profile Card */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="spatial-glass spatial-glass-hover p-6 w-full max-w-[360px] space-y-6 relative animate-float">
+              
+              {/* Profile emblem placeholder */}
+              <div className="w-full aspect-[4/3] bg-gradient-to-br from-[#4F9DFF]/10 to-[#7C3AED]/5 rounded-2xl border border-white/5 flex items-center justify-center relative overflow-hidden group">
+                <Database className="w-16 h-16 text-[#4F9DFF] opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] to-transparent opacity-40"></div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-base font-bold font-display text-white">Sai Krishna Mittapelli</h3>
+                  <span className="text-[10px] font-mono text-[#94A3B8] uppercase block">Decision Support Engineer</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/5 text-xs font-mono">
+                  <div>
+                    <span className="text-[8px] text-[#94A3B8] block uppercase">Location</span>
+                    <span className="text-white block mt-0.5 font-sans">Hyderabad, IN</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] text-[#94A3B8] block uppercase">Status</span>
+                    <span className="text-emerald-400 block mt-0.5 font-sans font-medium flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                      Open for Offers
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+
+        {/* ================================= ABOUT SECTION ================================= */}
+        <section id="about" className="space-y-12 scroll-mt-28">
+          <div className="space-y-2 text-center max-w-2xl mx-auto">
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Profiler Overview ]</span>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold">About Me</h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-4xl mx-auto items-stretch">
+            
+            {/* Visual Glass Profile Panel */}
+            <div className="lg:col-span-8 spatial-glass p-8 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-[#4F9DFF]">
+                  <GraduationCap className="w-6 h-6" />
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider">Educational Summary</span>
+                </div>
+                <h4 className="text-lg font-bold text-white font-display italic leading-snug">
+                  {PERSONAL_INFO.about.education}
+                </h4>
+                <p className="text-sm text-[#94A3B8] font-light leading-relaxed">
+                  I construct automated ETL systems and Power BI dashboards, translating multi-million-row transactional tables into clear executive business indicators. Bypassing anti-scrape web blocks, normalising sports catalogs, and compiling SQL Views to track gross profit margins.
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-white/5">
+                <a 
+                  href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#4F9DFF] hover:text-[#7C3AED] transition"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Download Experience Brief</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+
+            {/* Metrics counter grid */}
+            <div className="lg:col-span-4 grid grid-cols-2 gap-4">
+              <div className="spatial-glass p-5 flex flex-col justify-between">
+                <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">SQL Queries</span>
+                <div>
+                  <span className="text-2xl font-bold font-display text-white">90%</span>
+                  <span className="text-[10px] text-emerald-400 block font-light mt-0.5">Speed Optimised</span>
+                </div>
+              </div>
+
+              <div className="spatial-glass p-5 flex flex-col justify-between">
+                <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">ETL Automation</span>
+                <div>
+                  <span className="text-2xl font-bold font-display text-white">96%</span>
+                  <span className="text-[10px] text-emerald-400 block font-light mt-0.5">Task Reduction</span>
+                </div>
+              </div>
+
+              <div className="spatial-glass p-5 flex flex-col justify-between">
+                <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">Data Rows</span>
+                <div>
+                  <span className="text-2xl font-bold font-display text-white">Millions</span>
+                  <span className="text-[10px] text-slate-400 block font-light mt-0.5">Relational core</span>
+                </div>
+              </div>
+
+              <div className="spatial-glass p-5 flex flex-col justify-between">
+                <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">Certifications</span>
+                <div>
+                  <span className="text-2xl font-bold font-display text-white">4</span>
+                  <span className="text-[10px] text-slate-400 block font-light mt-0.5">Verified Badges</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </section>
 
         {/* ================================= PROJECTS SECTION ================================= */}
-        <section id="projects" className="space-y-10 scroll-mt-28">
+        <section id="projects" className="space-y-12 scroll-mt-28">
           <div className="space-y-2 text-center max-w-2xl mx-auto">
-            <span className="text-[#8AB4F8] font-mono text-xs tracking-widest uppercase block">02 / Portfolio Showcase</span>
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ SaaS Product Launch ]</span>
             <h2 className="text-3xl sm:text-4xl font-display font-bold">Featured Projects</h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-10 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 gap-12 max-w-4xl mx-auto">
             {allProjects.map((proj) => {
               const isExpanded = !!expandedProjects[proj.id];
 
               return (
                 <div 
                   key={proj.id}
-                  className="glass-panel overflow-hidden flex flex-col hover:border-[#8AB4F8]/20 transition-all duration-300"
+                  className="spatial-glass overflow-hidden flex flex-col hover:border-[#4F9DFF]/20"
                 >
-                  {/* Dashboard Screenshot Mockup Header */}
-                  <div className="w-full bg-[#0E1524] border-b border-white/5 aspect-[16/6] relative overflow-hidden group">
-                    
-                    {/* CSS Rendered clean Mockup Dashboard representing analytics */}
-                    <div className="absolute inset-0 p-5 flex flex-col justify-between font-mono text-[9px] text-[#94A3B8] select-none img-zoom">
+                  
+                  {/* Clean Visual Dashboard Mockup Header */}
+                  <div className="w-full bg-[#0E131F] border-b border-white/5 aspect-[16/6] relative overflow-hidden group">
+                    <div className="absolute inset-0 p-5 flex flex-col justify-between font-mono text-[9px] text-[#94A3B8] img-zoom">
                       <div className="flex items-center justify-between border-b border-white/5 pb-2">
                         <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                          <span className="text-slate-400 font-semibold tracking-wider ml-1">{proj.title} Preview</span>
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                          <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                          <span className="text-slate-400 font-semibold ml-1 tracking-wider">{proj.title} Metrics</span>
                         </div>
-                        <span className="text-[#8AB4F8] bg-[#8AB4F8]/10 px-2 py-0.5 rounded-full uppercase tracking-wider text-[8px]">
-                          DATASET INTEGRITY_OK
-                        </span>
+                        <span className="text-[#4F9DFF] bg-[#4F9DFF]/10 px-2 py-0.5 rounded-full">SYSTEM_PIPELINE: ACTIVE</span>
                       </div>
-                      
-                      {/* Graphics representing dashboard values */}
-                      <div className="grid grid-cols-12 gap-4 flex-1 items-center pt-2">
-                        <div className="col-span-4 p-2.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                          <span>DASHBOARD METRICS</span>
-                          <div className="text-lg font-bold font-display text-[#F8FAFC] tracking-tight">{proj.metrics?.[0]?.value || '100%'}</div>
-                          <span className="text-[8px] text-emerald-400">{proj.metrics?.[0]?.label || 'Active'}</span>
+
+                      {/* Mockup charting representation */}
+                      <div className="grid grid-cols-3 gap-4 pt-2">
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                          <span>ROI INDEX</span>
+                          <div className="text-sm font-bold text-white font-display mt-0.5">{proj.metrics?.[0]?.value || '100%'}</div>
                         </div>
-                        
-                        <div className="col-span-8 h-20 rounded-xl bg-white/5 border border-white/5 p-3 flex flex-col justify-between">
-                          <span>REGIONAL PERFORMANCE MATRIX</span>
-                          <div className="flex items-end gap-1.5 h-8">
-                            <div className="w-3 bg-[#8AB4F8]/20 h-[30%] rounded-t-sm"></div>
-                            <div className="w-3 bg-[#8AB4F8]/40 h-[50%] rounded-t-sm"></div>
-                            <div className="w-3 bg-[#8AB4F8]/70 h-[80%] rounded-t-sm"></div>
-                            <div className="w-3 bg-[#8AB4F8] h-[95%] rounded-t-sm"></div>
-                            <div className="w-3 bg-emerald-500/80 h-[65%] rounded-t-sm"></div>
-                          </div>
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                          <span>YIELD SPEED</span>
+                          <div className="text-sm font-bold text-white font-display mt-0.5">{proj.metrics?.[1]?.value || 'Stable'}</div>
+                        </div>
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                          <span>AGGREGATIONS</span>
+                          <div className="text-sm font-bold text-white font-display mt-0.5">{proj.metrics?.[2]?.value || 'OK'}</div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card Content body */}
+                  {/* Body Content */}
                   <div className="p-6 sm:p-8 space-y-6">
-                    
                     <div className="space-y-2">
-                      <h3 className="text-xl font-bold font-display text-[#F8FAFC]">
+                      <h3 className="text-xl sm:text-2xl font-bold font-display text-white">
                         {proj.title}
                       </h3>
-                      {/* Short 2-3 sentence summary */}
                       <p className="text-sm text-[#94A3B8] leading-relaxed font-light">
                         {proj.description}
                       </p>
                     </div>
 
-                    {/* Tech stack chips */}
+                    {/* Tech Chips */}
                     <div className="flex flex-wrap gap-2">
                       {proj.tech.map((t) => (
-                        <span key={t} className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[10px] font-mono text-[#94A3B8]">
+                        <span 
+                          key={t}
+                          className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-mono text-[#94A3B8]"
+                        >
                           {t}
                         </span>
                       ))}
@@ -306,35 +410,35 @@ export default function App() {
 
                     {/* Business impact */}
                     {proj.impact && (
-                      <div className="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-start gap-2.5 text-xs text-[#94A3B8] font-light leading-relaxed">
+                      <div className="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-start gap-2 text-xs text-[#94A3B8] font-light leading-relaxed">
                         <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                         <div>
-                          <span className="text-emerald-400 font-bold uppercase font-mono text-[9px] tracking-wider block">Business Impact Delivered</span>
+                          <span className="text-emerald-400 font-bold uppercase font-mono text-[9px] tracking-wider block">Business Impact</span>
                           <p className="mt-0.5">{proj.impact[0]}</p>
                         </div>
                       </div>
                     )}
 
-                    {/* Collapsible panel for deep technical specifications */}
+                    {/* Collapsible Panel */}
                     {isExpanded && (
                       <div className="pt-4 border-t border-white/5 space-y-4 animate-blurReveal text-xs sm:text-sm">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <span className="text-red-400 font-bold uppercase font-mono text-[9px] tracking-wider block">⚠️ The Challenge</span>
+                            <span className="text-red-400 font-bold uppercase font-mono text-[9px] block">⚠️ Problem detected</span>
                             <p className="text-[#94A3B8] font-light leading-relaxed">{proj.problem}</p>
                           </div>
                           <div className="space-y-1">
-                            <span className="text-[#8AB4F8] font-bold uppercase font-mono text-[9px] tracking-wider block">💎 The Solution</span>
+                            <span className="text-[#4F9DFF] font-bold uppercase font-mono text-[9px] block">💎 Solution constructed</span>
                             <p className="text-[#94A3B8] font-light leading-relaxed">{proj.solution}</p>
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <span className="text-[#94A3B8] text-[9px] font-mono uppercase block">Detailed Highlights</span>
-                          <ul className="space-y-1.5 text-[#94A3B8] font-light leading-relaxed text-xs">
-                            {proj.features?.map((f, fIdx) => (
-                              <li key={fIdx} className="flex items-start gap-2">
-                                <span className="text-[#8AB4F8]">•</span>
+                          <span className="text-[#94A3B8] text-[9px] font-mono uppercase block">Technical Highlights</span>
+                          <ul className="space-y-1 text-xs text-[#94A3B8] font-light">
+                            {proj.features?.map((f, idx) => (
+                              <li key={idx} className="flex items-start gap-1.5">
+                                <span className="text-[#4F9DFF]">•</span>
                                 <span>{f}</span>
                               </li>
                             ))}
@@ -343,12 +447,11 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Footer Actions */}
+                    {/* Actions panel */}
                     <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-4">
-                      
                       <button 
                         onClick={() => toggleProject(proj.id)}
-                        className="inline-flex items-center gap-1 text-xs font-mono font-medium text-[#8AB4F8] hover:text-[#AECBFA] transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#4F9DFF] hover:text-[#7C3AED] transition cursor-pointer"
                       >
                         <span>{isExpanded ? 'Hide Specs' : 'Read More'}</span>
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -360,10 +463,10 @@ export default function App() {
                             href={proj.githubUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#94A3B8] hover:text-[#8AB4F8] transition"
+                            className="inline-flex items-center gap-1 text-xs font-mono font-medium text-[#94A3B8] hover:text-[#4F9DFF] transition"
                           >
                             <Github className="w-4 h-4" />
-                            <span>GitHub</span>
+                            <span>Codebase</span>
                           </a>
                         )}
                         {proj.liveUrl && (
@@ -371,7 +474,7 @@ export default function App() {
                             href={proj.liveUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#94A3B8] hover:text-[#8AB4F8] transition"
+                            className="inline-flex items-center gap-1 text-xs font-mono font-medium text-[#94A3B8] hover:text-[#4F9DFF] transition"
                           >
                             <ExternalLink className="w-4 h-4" />
                             <span>Live Demo</span>
@@ -381,6 +484,7 @@ export default function App() {
                     </div>
 
                   </div>
+
                 </div>
               );
             })}
@@ -388,21 +492,28 @@ export default function App() {
         </section>
 
         {/* ================================= SKILLS SECTION ================================= */}
-        <section id="skills" className="space-y-10 scroll-mt-28">
+        <section id="skills" className="space-y-12 scroll-mt-28">
           <div className="space-y-2 text-center max-w-2xl mx-auto">
-            <span className="text-[#8AB4F8] font-mono text-xs tracking-widest uppercase block">03 / Tooling Coordinates</span>
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Competencies bubbles ]</span>
             <h2 className="text-3xl sm:text-4xl font-display font-bold">Skills Inventory</h2>
           </div>
 
-          <div className="max-w-3xl mx-auto space-y-6">
-            {skillCategories.map((cat, idx) => (
-              <div key={idx} className="space-y-2.5">
-                <span className="text-xs font-mono text-[#94A3B8] uppercase block tracking-wider">{cat.name}</span>
-                <div className="flex flex-wrap gap-2.5">
-                  {cat.skills.map((skill, sIdx) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {skillGroups.map((group, idx) => (
+              <div 
+                key={idx}
+                className="spatial-glass p-5 flex flex-col justify-between space-y-4 hover:border-[#4F9DFF]/20"
+              >
+                <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                  {group.icon}
+                  <span className="text-xs font-bold font-display text-white">{group.category}</span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {group.skills.map((skill, sIdx) => (
                     <div 
                       key={sIdx}
-                      className="px-4 py-2 rounded-full bg-white/5 border border-white/5 hover:border-[#8AB4F8]/20 hover:text-[#8AB4F8] hover:scale-[1.03] transition-all duration-300 font-mono text-xs cursor-default text-[#F8FAFC]"
+                      className="px-3 py-1.5 rounded-full bg-white/5 border border-white/5 hover:border-[#4F9DFF]/20 hover:text-[#4F9DFF] hover:scale-[1.03] transition-all duration-300 font-mono text-[10px] text-[#F8FAFC] cursor-default"
                     >
                       {skill}
                     </div>
@@ -414,26 +525,26 @@ export default function App() {
         </section>
 
         {/* ================================= EXPERIENCE SECTION ================================= */}
-        <section id="experience" className="space-y-10 scroll-mt-28">
+        <section id="experience" className="space-y-12 scroll-mt-28">
           <div className="space-y-2 text-center max-w-2xl mx-auto">
-            <span className="text-[#8AB4F8] font-mono text-xs tracking-widest uppercase block">04 / Timeline Stages</span>
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Apple Timeline ]</span>
             <h2 className="text-3xl sm:text-4xl font-display font-bold">Experience</h2>
           </div>
 
           <div className="max-w-2xl mx-auto relative pl-6 sm:pl-8 border-l border-white/5 space-y-10 py-2">
             {TIMELINE_DATA.map((step) => (
               <div key={step.id} className="relative group space-y-3">
-                {/* Visual vertical dot */}
-                <div className="absolute -left-[30px] sm:-left-[37px] top-1.5 w-3.5 h-3.5 rounded-full bg-[#0B0F19] border border-[#8AB4F8] group-hover:bg-[#8AB4F8] transition-colors duration-300"></div>
+                {/* Timeline visual marker */}
+                <div className="absolute -left-[30px] sm:-left-[37px] top-1.5 w-3.5 h-3.5 rounded-full bg-[#0A0A0A] border border-[#4F9DFF] group-hover:bg-[#4F9DFF] transition-colors duration-300"></div>
 
                 <div className="space-y-1">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <span className="text-[10px] font-mono text-[#8AB4F8] bg-[#8AB4F8]/10 px-2 py-0.5 rounded-full w-fit uppercase tracking-wider">
+                    <span className="text-[10px] font-mono text-[#4F9DFF] bg-[#4F9DFF]/10 px-2 py-0.5 rounded-full w-fit uppercase tracking-wider">
                       {step.phase}
                     </span>
                     <span className="text-xs text-[#94A3B8] font-mono">{step.duration}</span>
                   </div>
-                  <h3 className="text-lg font-bold font-display text-[#F8FAFC]">
+                  <h3 className="text-lg font-bold font-display text-white">
                     {step.title}
                   </h3>
                   <span className="text-xs font-medium text-[#94A3B8] block">{step.subtitle}</span>
@@ -443,10 +554,10 @@ export default function App() {
                   {step.description}
                 </p>
 
-                <ul className="space-y-1.5">
+                <ul className="space-y-1 text-xs text-[#94A3B8] font-light">
                   {step.milestones.map((ms, index) => (
-                    <li key={index} className="flex items-start gap-2 text-xs text-[#94A3B8] font-light">
-                      <span className="text-[#8AB4F8] mt-0.5">•</span>
+                    <li key={index} className="flex items-start gap-1.5">
+                      <span className="text-[#4F9DFF]">•</span>
                       <span>{ms}</span>
                     </li>
                   ))}
@@ -457,25 +568,25 @@ export default function App() {
         </section>
 
         {/* ================================= CERTIFICATIONS SECTION ================================= */}
-        <section id="certifications" className="space-y-10 scroll-mt-28">
+        <section id="certifications" className="space-y-12 scroll-mt-28">
           <div className="space-y-2 text-center max-w-2xl mx-auto">
-            <span className="text-[#8AB4F8] font-mono text-xs tracking-widest uppercase block">05 / Verified Badges</span>
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Verified Badges ]</span>
             <h2 className="text-3xl sm:text-4xl font-display font-bold">Certifications</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {CERTIFICATIONS.map((cert) => (
               <div 
                 key={cert.id}
-                className="glass-panel p-5 flex flex-col justify-between hover:border-[#8AB4F8]/20 hover:-translate-y-1 transition-all duration-300 relative group"
+                className="spatial-glass p-5 flex flex-col justify-between hover:border-[#4F9DFF]/20 hover:-translate-y-1 transition-all duration-300 relative group"
               >
                 <div className="space-y-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-[#8AB4F8]">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#4F9DFF]">
                     <Award className="w-5 h-5" />
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">{cert.issuer}</span>
-                    <h4 className="text-xs font-bold text-[#F8FAFC] font-display leading-snug group-hover:text-[#8AB4F8] transition-colors">
+                    <h4 className="text-xs font-bold text-white font-display leading-snug group-hover:text-[#4F9DFF] transition-colors">
                       {cert.name}
                     </h4>
                   </div>
@@ -488,7 +599,7 @@ export default function App() {
                       href={cert.credentialUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-0.5 text-[#8AB4F8] hover:text-[#AECBFA] transition font-semibold"
+                      className="inline-flex items-center gap-0.5 text-[#4F9DFF] hover:text-[#7C3AED] transition font-semibold"
                     >
                       <span>Verify</span>
                       <ArrowUpRight className="w-3 h-3" />
@@ -500,24 +611,24 @@ export default function App() {
           </div>
         </section>
 
-        {/* ================================= CONTACT & FOOTER SECTION ================================= */}
+        {/* ================================= CONTACT SECTION ================================= */}
         <section id="contact" className="space-y-12 scroll-mt-28">
           
-          <div className="glass-panel p-8 sm:p-12 max-w-3xl mx-auto text-center space-y-8 relative overflow-hidden group">
+          <div className="spatial-glass p-8 sm:p-12 max-w-3xl mx-auto text-center space-y-8 relative overflow-hidden group">
             
             <div className="space-y-3">
-              <h3 className="text-2xl font-bold font-display text-[#F8FAFC]">Let&apos;s build something data-driven together.</h3>
+              <h3 className="text-2xl font-bold font-display text-white">Let&apos;s build something data-driven together.</h3>
               <p className="text-sm text-[#94A3B8] leading-relaxed max-w-xl mx-auto font-light">
-                Have a challenging scraping requirement, a complex SQL model to tune, or reports to construct? Inbound communications are secure.
+                Available for full-time Data Analyst roles, database optimization, pipeline architecture, and dashboards consulting.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto pt-4 text-xs font-mono">
               <a 
                 href="mailto:saikrishna.mittapelli123@gmail.com"
-                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#8AB4F8]/30 transition-colors text-left"
+                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#4F9DFF]/30 transition-colors text-left"
               >
-                <div className="p-2 rounded-lg bg-white/5 text-[#8AB4F8]">
+                <div className="p-2 rounded-lg bg-white/5 text-[#4F9DFF]">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
@@ -528,14 +639,14 @@ export default function App() {
 
               <a 
                 href="tel:+918125155568"
-                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#8AB4F8]/30 transition-colors text-left"
+                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#4F9DFF]/30 transition-colors text-left"
               >
-                <div className="p-2 rounded-lg bg-white/5 text-[#8AB4F8]">
+                <div className="p-2 rounded-lg bg-white/5 text-[#4F9DFF]">
                   <Phone className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[8px] text-[#94A3B8] block uppercase">Mobile telecommunication</span>
-                  <span className="text-xs text-[#F8FAFC] block">+91 81251 55568</span>
+                  <span className="text-[8px] text-[#94A3B8] block uppercase">Mobile port</span>
+                  <span className="text-xs text-white block">+91 81251 55568</span>
                 </div>
               </a>
 
@@ -543,14 +654,14 @@ export default function App() {
                 href="https://www.linkedin.com/in/saikrishna-mittapelli/"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#8AB4F8]/30 transition-colors text-left"
+                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#4F9DFF]/30 transition-colors text-left"
               >
-                <div className="p-2 rounded-lg bg-white/5 text-[#8AB4F8]">
+                <div className="p-2 rounded-lg bg-white/5 text-[#4F9DFF]">
                   <Linkedin className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[8px] text-[#94A3B8] block uppercase">LinkedIn Profile</span>
-                  <span className="text-xs text-[#F8FAFC] block">saikrishna-mittapelli</span>
+                  <span className="text-[8px] text-[#94A3B8] block uppercase">LinkedIn Link</span>
+                  <span className="text-xs text-white block font-sans">saikrishna-mittapelli</span>
                 </div>
               </a>
 
@@ -558,20 +669,20 @@ export default function App() {
                 href="https://github.com/mittapellisaikrishna"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#8AB4F8]/30 transition-colors text-left"
+                className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#4F9DFF]/30 transition-colors text-left"
               >
-                <div className="p-2 rounded-lg bg-white/5 text-[#8AB4F8]">
+                <div className="p-2 rounded-lg bg-white/5 text-[#4F9DFF]">
                   <Github className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[8px] text-[#94A3B8] block uppercase">GitHub Repos</span>
-                  <span className="text-xs text-[#F8FAFC] block">mittapellisaikrishna</span>
+                  <span className="text-[8px] text-[#94A3B8] block uppercase">GitHub Link</span>
+                  <span className="text-xs text-white block font-sans">mittapellisaikrishna</span>
                 </div>
               </a>
             </div>
 
             <div className="pt-4 text-[10px] font-mono text-[#94A3B8] flex items-center justify-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-[#8AB4F8]" />
+              <MapPin className="w-3.5 h-3.5 text-[#4F9DFF]" />
               <span>Hyderabad, Telangana, India</span>
             </div>
 
@@ -584,18 +695,18 @@ export default function App() {
       <footer className="border-t border-white/5 bg-[#090C13] py-10 relative z-20">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-[#8AB4F8]/10 border border-[#8AB4F8]/20 flex items-center justify-center">
-              <Database className="w-3.5 h-3.5 text-[#8AB4F8]" />
+            <div className="w-6 h-6 rounded-lg bg-[#4F9DFF]/10 border border-[#4F9DFF]/20 flex items-center justify-center">
+              <Database className="w-3.5 h-3.5 text-[#4F9DFF]" />
             </div>
             <span className="text-xs font-mono text-[#94A3B8]">
-              Sai Krishna Mittapelli © 2026. All rights preserved.
+              Sai Krishna Mittapelli © 2026. Designed for Recruiter Insights.
             </span>
           </div>
 
           <div className="flex items-center gap-5 text-xs font-mono text-[#94A3B8]">
-            <a href="https://github.com/mittapellisaikrishna" target="_blank" rel="noreferrer" className="hover:text-[#8AB4F8] transition">GitHub</a>
-            <a href="https://www.linkedin.com/in/saikrishna-mittapelli/" target="_blank" rel="noreferrer" className="hover:text-[#8AB4F8] transition">LinkedIn</a>
-            <button onClick={() => scrollToSection('hero')} className="hover:text-[#8AB4F8] transition cursor-pointer">Back to Top ↑</button>
+            <a href="https://github.com/mittapellisaikrishna" target="_blank" rel="noreferrer" className="hover:text-[#4F9DFF] transition">GitHub</a>
+            <a href="https://www.linkedin.com/in/saikrishna-mittapelli/" target="_blank" rel="noreferrer" className="hover:text-[#4F9DFF] transition">LinkedIn</a>
+            <button onClick={() => scrollToSection('hero')} className="hover:text-[#4F9DFF] transition cursor-pointer">Back to Top ↑</button>
           </div>
         </div>
       </footer>

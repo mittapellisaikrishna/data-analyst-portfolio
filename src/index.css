@@ -1,86 +1,107 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
 }
 
 @layer base {
   body {
-    background-color: #0B0F19;
-    background-image: radial-gradient(circle at 50% 25%, #18233F 0%, #0B0F19 65%, #090C13 100%);
-    background-attachment: fixed;
+    background-color: #0A0A0A;
     color: #F8FAFC;
     font-family: var(--font-sans);
-    line-height: 1.7;
+    line-height: 1.6;
     overflow-x: hidden;
   }
 }
 
-/* Polished Gemini Glassmorphism with lower border opacity */
-.glass-panel {
+/* Spatial visionOS frosted glass panels */
+.spatial-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spatial-glass-hover:hover {
+  transform: translateY(-6px) scale(1.01);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Floating Navigation Dock */
+.floating-dock {
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Apple Gradient Titles */
+.apple-gradient-text {
+  background: linear-gradient(135deg, #FFF 0%, #94A3B8 50%, #4F9DFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animated Aurora Background Gradients */
+.aurora-blur-1 {
+  background: radial-gradient(circle, rgba(79, 157, 255, 0.12) 0%, transparent 60%);
+  filter: blur(60px);
+}
+
+.aurora-blur-2 {
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
+  filter: blur(60px);
+}
+
+/* Premium Apple action triggers */
+.btn-apple-primary {
+  background: linear-gradient(185deg, #4F9DFF 0%, #3B82F6 100%);
+  color: #0A0A0A;
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: 0 10px 20px rgba(79, 157, 255, 0.25);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-panel-hover:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.09);
-}
-
-/* Polished Pill Buttons */
-.btn-primary {
-  background: #8AB4F8;
-  color: #0B0F19;
-  border-radius: 999px;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-primary:hover {
-  background: #AECBFA;
+.btn-apple-primary:hover {
+  background: linear-gradient(185deg, #7C3AED 0%, #6D28D9 100%);
+  color: #FFF;
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 0 24px rgba(138, 180, 248, 0.25);
+  box-shadow: 0 15px 30px rgba(124, 58, 237, 0.4);
 }
 
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.btn-apple-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 999px;
   color: #F8FAFC;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(138, 180, 248, 0.3);
+.btn-apple-secondary:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px) scale(1.03);
 }
 
-/* Subtle image scale hover */
-.img-zoom {
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.img-zoom:hover {
-  transform: scale(1.04);
-}
-
-/* Scrollbar styling - Minimal */
+/* Scrollbar Minimal */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090C13;
+  background: #0A0A0A;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -89,29 +110,28 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Ambient hero glow */
-.hero-radial-glow {
-  background: radial-gradient(circle, rgba(138, 180, 248, 0.05) 0%, transparent 60%);
-  pointer-events: none;
+/* Animations */
+@keyframes textShine {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* Smooth reveal animation */
-@keyframes blurReveal {
-  from {
-    filter: blur(8px);
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    filter: blur(0px);
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
 }
 
-.animate-blurReveal {
-  animation: blurReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes cursorGlow {
+  0% { opacity: 0.15; }
+  50% { opacity: 0.25; }
+  100% { opacity: 0.15; }
 }
