@@ -136,7 +136,7 @@ export default function App() {
           </div>
 
           <a 
-            href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
+            href="https://drive.google.com/file/d/141KnMhWn8bsEoBWB309Beo3nTduMuZdr/view?usp=sharing"
             target="_blank"
             rel="noreferrer"
             className="px-4 py-1.5 text-xs font-semibold rounded-full bg-[#4F9DFF]/10 hover:bg-[#4F9DFF]/25 text-[#4F9DFF] border border-[#4F9DFF]/20 hover:border-[#4F9DFF]/40 transition-all shadow-md"
@@ -193,7 +193,7 @@ export default function App() {
                 <ChevronRight className="w-4 h-4" />
               </button>
               <a 
-                href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
+                href="https://drive.google.com/file/d/141KnMhWn8bsEoBWB309Beo3nTduMuZdr/view?usp=sharing"
                 target="_blank"
                 rel="noreferrer"
                 className="px-6 py-3 text-xs font-bold uppercase tracking-wider btn-apple-secondary flex items-center gap-2"
@@ -287,7 +287,7 @@ export default function App() {
 
               <div className="pt-4 border-t border-white/5">
                 <a 
-                  href="https://drive.google.com/file/d/1HgrtnpsRj7EVVwamokoQ0A7_e3OAQDT_/view?usp=sharing"
+                  href="https://drive.google.com/file/d/141KnMhWn8bsEoBWB309Beo3nTduMuZdr/view?usp=sharing"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#4F9DFF] hover:text-[#7C3AED] transition"
