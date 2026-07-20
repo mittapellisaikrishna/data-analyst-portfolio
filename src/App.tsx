@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Database, 
   Terminal, 
@@ -22,15 +22,401 @@ import {
   Code,
   Wrench,
   Layers,
-  LineChart
+  LineChart,
+  Sparkles,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
+import gsap from 'gsap';
+import Lenis from 'lenis';
+import { AnimatePresence, motion } from 'motion/react';
 import { PERSONAL_INFO, TIMELINE_DATA, ADDITIONAL_PROJECTS, CERTIFICATIONS, FEATURED_PROJECT } from './data';
+
+const INTRO_SESSION_KEY = 'sai-krishna-portfolio-intro-entered';
+const introWords = ['Welcome', 'to', 'Sai Krishna', 'Portfolio'];
+const revealEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+const portfolioRevealVariants = {
+  hidden: {
+    opacity: 0,
+    y: 90,
+    scale: 0.94,
+    filter: 'blur(28px)'
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 1.25,
+      ease: revealEase,
+      when: 'beforeChildren',
+      staggerChildren: 0.14
+    }
+  }
+};
+
+const revealItemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 34,
+    filter: 'blur(18px)'
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.95,
+      ease: revealEase
+    }
+  }
+};
+
+const heroSequenceVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.2,
+      staggerChildren: 0.18
+    }
+  }
+};
+
+function CinematicIntro({
+  onEnterStart,
+  onComplete
+}: {
+  onEnterStart: () => void;
+  onComplete: () => void;
+}) {
+  const introRef = useRef<HTMLDivElement | null>(null);
+  const leavingRef = useRef(false);
+  const completeRef = useRef(false);
+  const completeTimerRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [cursor, setCursor] = useState({ x: 0, y: 0 });
+  const [buttonOffset, setButtonOffset] = useState({ x: 0, y: 0 });
+
+  const stopAmbient = () => {
+    gainRef.current?.gain.setTargetAtTime(0, audioContextRef.current?.currentTime ?? 0, 0.08);
+    window.setTimeout(() => {
+      oscillatorRef.current?.stop();
+      audioContextRef.current?.close();
+      oscillatorRef.current = null;
+      gainRef.current = null;
+      audioContextRef.current = null;
+    }, 180);
+  };
+
+  const startAmbient = async () => {
+    if (audioContextRef.current) {
+      return;
+    }
+
+    type AudioWindow = Window & typeof globalThis & { webkitAudioContext?: typeof AudioContext };
+    const AudioContextCtor = window.AudioContext ?? (window as AudioWindow).webkitAudioContext;
+
+    if (!AudioContextCtor) {
+      return;
+    }
+
+    const context = new AudioContextCtor();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const filter = context.createBiquadFilter();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 146.83;
+    filter.type = 'lowpass';
+    filter.frequency.value = 480;
+    gain.gain.value = 0;
+
+    oscillator.connect(filter);
+    filter.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+
+    audioContextRef.current = context;
+    oscillatorRef.current = oscillator;
+    gainRef.current = gain;
+
+    if (context.state === 'suspended') {
+      await context.resume();
+    }
+
+    gain.gain.setTargetAtTime(0.018, context.currentTime, 0.2);
+  };
+
+  const beginExit = () => {
+    if (leavingRef.current) {
+      return;
+    }
+
+    const finishIntro = () => {
+      if (completeRef.current) {
+        return;
+      }
+
+      completeRef.current = true;
+      onComplete();
+    };
+
+    leavingRef.current = true;
+    setIsLeaving(true);
+    onEnterStart();
+    completeTimerRef.current = window.setTimeout(finishIntro, 1700);
+
+    const timeline = gsap.timeline({
+      defaults: { ease: 'power4.inOut' },
+      onComplete: finishIntro
+    });
+
+    timeline
+      .to('.intro-word-line', {
+        yPercent: -35,
+        opacity: 0,
+        filter: 'blur(28px)',
+        duration: 0.7,
+        stagger: 0.035
+      }, 0)
+      .to('.intro-subtitle', {
+        y: -24,
+        opacity: 0,
+        filter: 'blur(18px)',
+        duration: 0.55
+      }, 0.05)
+      .to('.intro-enter-btn', {
+        scale: 0.9,
+        opacity: 0,
+        filter: 'blur(14px)',
+        duration: 0.45
+      }, 0.08)
+      .to('.intro-portal-core', {
+        opacity: 1,
+        scale: 26,
+        rotation: 32,
+        duration: 1.45
+      }, 0.02)
+      .to('.intro-glass-shard', {
+        x: 'var(--shard-x)',
+        y: 'var(--shard-y)',
+        rotate: 'var(--shard-r)',
+        opacity: 0,
+        scale: 1.8,
+        duration: 1.2,
+        stagger: { each: 0.025, from: 'center' }
+      }, 0.08)
+      .to(introRef.current, {
+        scale: 1.12,
+        opacity: 0,
+        filter: 'blur(22px)',
+        duration: 1.5
+      }, 0);
+  };
+
+  useEffect(() => {
+    const timer = window.setTimeout(beginExit, 4800);
+
+    return () => {
+      window.clearTimeout(timer);
+      if (completeTimerRef.current) {
+        window.clearTimeout(completeTimerRef.current);
+      }
+      stopAmbient();
+    };
+  }, []);
+
+  const toggleSound = async () => {
+    if (soundEnabled) {
+      stopAmbient();
+      setSoundEnabled(false);
+      return;
+    }
+
+    await startAmbient();
+    setSoundEnabled(true);
+  };
+
+  const handleButtonMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left - rect.width / 2;
+    const y = event.clientY - rect.top - rect.height / 2;
+
+    setButtonOffset({
+      x: Math.max(-18, Math.min(18, x * 0.18)),
+      y: Math.max(-12, Math.min(12, y * 0.18))
+    });
+  };
+
+  return (
+    <motion.div
+      ref={introRef}
+      className={`cinematic-intro ${isLeaving ? 'is-leaving' : ''}`}
+      style={{
+        '--cursor-x': `${cursor.x}px`,
+        '--cursor-y': `${cursor.y}px`
+      } as React.CSSProperties}
+      onPointerMove={(event) => setCursor({ x: event.clientX, y: event.clientY })}
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="intro-aurora intro-aurora-a"></div>
+      <div className="intro-aurora intro-aurora-b"></div>
+      <div className="intro-aurora intro-aurora-c"></div>
+      <div className="intro-glass-field"></div>
+      <div className="intro-cursor-light"></div>
+      <div className="intro-portal-core"></div>
+
+      <div className="intro-particle-field" aria-hidden="true">
+        {Array.from({ length: 44 }).map((_, index) => (
+          <span
+            key={index}
+            className="intro-particle"
+            style={{
+              '--particle-left': `${(index * 17) % 100}%`,
+              '--particle-top': `${(index * 29) % 100}%`,
+              '--particle-delay': `${(index % 11) * 0.28}s`,
+              '--particle-duration': `${7 + (index % 8)}s`
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+
+      <div className="intro-shatter-field" aria-hidden="true">
+        {Array.from({ length: 16 }).map((_, index) => (
+          <span
+            key={index}
+            className="intro-glass-shard"
+            style={{
+              '--shard-x': `${(index % 4 - 1.5) * 165}px`,
+              '--shard-y': `${(Math.floor(index / 4) - 1.5) * 130}px`,
+              '--shard-r': `${index % 2 === 0 ? 42 + index * 5 : -48 - index * 4}deg`
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className="intro-skip-btn"
+        onClick={beginExit}
+        aria-label="Skip cinematic intro"
+      >
+        Skip
+      </button>
+
+      <button
+        type="button"
+        className="intro-audio-btn"
+        onClick={toggleSound}
+        aria-label={soundEnabled ? 'Mute ambient sound' : 'Play ambient sound'}
+      >
+        {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+      </button>
+
+      <motion.div
+        className="intro-copy"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: {
+            transition: {
+              staggerChildren: 0.72,
+              delayChildren: 0.25
+            }
+          }
+        }}
+      >
+        <motion.div
+          className="intro-kicker"
+          variants={revealItemVariants}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Decision Intelligence Portal</span>
+        </motion.div>
+
+        <div className="intro-word-stack" aria-label="Welcome to Sai Krishna Portfolio">
+          {introWords.map((word) => (
+            <motion.span
+              key={word}
+              className="intro-word-line"
+              variants={{
+                hidden: {
+                  y: 42,
+                  opacity: 0,
+                  filter: 'blur(24px)',
+                  scale: 0.96
+                },
+                visible: {
+                  y: 0,
+                  opacity: 1,
+                  filter: 'blur(0px)',
+                  scale: 1,
+                  transition: {
+                    duration: 0.9,
+                    ease: revealEase
+                  }
+                }
+              }}
+            >
+              {word}
+            </motion.span>
+          ))}
+        </div>
+
+        <motion.p
+          className="intro-subtitle"
+          variants={{
+            hidden: { opacity: 0, y: 20, filter: 'blur(18px)' },
+            visible: {
+              opacity: 1,
+              y: 0,
+              filter: 'blur(0px)',
+              transition: { duration: 0.9, ease: revealEase }
+            }
+          }}
+        >
+          My Digital Universe
+        </motion.p>
+
+        <motion.button
+          type="button"
+          className="intro-enter-btn"
+          onClick={beginExit}
+          onPointerMove={handleButtonMove}
+          onPointerLeave={() => setButtonOffset({ x: 0, y: 0 })}
+          animate={{
+            x: buttonOffset.x,
+            y: buttonOffset.y
+          }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 18 }}
+        >
+          <span>ENTER</span>
+          <ChevronRight className="w-5 h-5" />
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [subheadingIdx, setSubheadingIdx] = useState(0);
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const hasSeenIntro = typeof window !== 'undefined' && window.sessionStorage.getItem(INTRO_SESSION_KEY) === 'true';
+  const [showIntro, setShowIntro] = useState(() => !hasSeenIntro);
+  const [revealPortfolio, setRevealPortfolio] = useState(() => hasSeenIntro);
+  const lenisRef = useRef<Lenis | null>(null);
 
   const subheadings = ["Data Analyst", "AI Developer", "Machine Learning Engineer"];
 
@@ -50,6 +436,49 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.15,
+      easing: (t: number) => 1 - Math.pow(1 - t, 4),
+      smoothWheel: true,
+      touchMultiplier: 1.15
+    });
+    let animationFrame = 0;
+
+    lenisRef.current = lenis;
+
+    const raf = (time: number) => {
+      lenis.raf(time);
+      animationFrame = window.requestAnimationFrame(raf);
+    };
+
+    animationFrame = window.requestAnimationFrame(raf);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle('intro-locked', showIntro);
+
+    return () => {
+      document.body.classList.remove('intro-locked');
+    };
+  }, [showIntro]);
+
+  const handleIntroStart = () => {
+    window.sessionStorage.setItem(INTRO_SESSION_KEY, 'true');
+    lenisRef.current?.scrollTo(0, { immediate: true });
+    setRevealPortfolio(true);
+  };
+
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setMousePos({
@@ -61,6 +490,14 @@ export default function App() {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(element, {
+          offset: -96,
+          duration: 1.15
+        });
+        return;
+      }
+
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
@@ -95,10 +532,24 @@ export default function App() {
   const allProjects = [FEATURED_PROJECT, ...ADDITIONAL_PROJECTS];
 
   return (
-    <div 
-      className="min-h-screen text-[#F8FAFC] flex flex-col font-sans relative selection:bg-[#4F9DFF]/30 selection:text-[#4F9DFF]"
-      onMouseMove={handleMouseMove}
-    >
+    <>
+      <AnimatePresence>
+        {showIntro && (
+          <CinematicIntro
+            onEnterStart={handleIntroStart}
+            onComplete={handleIntroComplete}
+          />
+        )}
+      </AnimatePresence>
+
+      {revealPortfolio && (
+        <motion.div
+          className="portfolio-shell min-h-screen text-[#F8FAFC] flex flex-col font-sans relative selection:bg-[#4F9DFF]/30 selection:text-[#4F9DFF]"
+          onMouseMove={handleMouseMove}
+          initial={showIntro ? 'hidden' : 'visible'}
+          animate="visible"
+          variants={portfolioRevealVariants}
+        >
       
       {/* Background Aurora Spots */}
       <div className="absolute top-[10%] left-[-15%] w-[60%] h-[50%] aurora-blur-1 rounded-full pointer-events-none z-0"></div>
@@ -113,7 +564,7 @@ export default function App() {
       ></div>
 
       {/* ================================= NAVBAR ================================= */}
-      <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+      <motion.div variants={revealItemVariants} className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
         <nav className={`floating-dock flex items-center justify-between px-6 py-3 rounded-full transition-all duration-500 ${
           isScrolled 
             ? 'w-full max-w-2xl py-2.5 bg-[#0A0A0A]/90 border-white/10 shadow-2xl' 
@@ -144,16 +595,16 @@ export default function App() {
             CV
           </a>
         </nav>
-      </div>
+      </motion.div>
 
       {/* ================================= MAIN CONTAINER ================================= */}
-      <main id="hero" className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-8 pt-28 md:pt-36 pb-20 space-y-36 md:space-y-48 relative z-20">
+      <motion.main variants={heroSequenceVariants} id="hero" className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-8 pt-28 md:pt-36 pb-20 space-y-36 md:space-y-48 relative z-20">
 
         {/* ================================= HERO SECTION ================================= */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <motion.section variants={heroSequenceVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Left Text Detail */}
-          <div className="lg:col-span-7 space-y-6 text-left animate-blurReveal">
+          <motion.div variants={revealItemVariants} className="lg:col-span-7 space-y-6 text-left animate-blurReveal">
             <div className="space-y-3">
               <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block font-semibold">
                 [ Decision Intelligence Engine ]
@@ -184,7 +635,7 @@ export default function App() {
               Transforming raw, unstructured business data into key operational indicators and high-fidelity dashboards to optimize decision velocity.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <motion.div variants={revealItemVariants} className="flex flex-wrap items-center gap-4 pt-2">
               <button 
                 onClick={() => scrollToSection('projects')} 
                 className="px-6 py-3 text-xs font-bold uppercase tracking-wider btn-apple-primary flex items-center gap-2 cursor-pointer"
@@ -222,11 +673,11 @@ export default function App() {
                   <Github className="w-4.5 h-4.5" />
                 </a>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Right Floating Spatial Profile Card */}
-          <div className="lg:col-span-5 flex justify-center">
+          <motion.div variants={revealItemVariants} className="lg:col-span-5 flex justify-center">
             <div className="spatial-glass spatial-glass-hover p-6 w-full max-w-[360px] space-y-6 relative animate-float">
               
               {/* Profile emblem placeholder */}
@@ -257,12 +708,12 @@ export default function App() {
               </div>
 
             </div>
-          </div>
+          </motion.div>
 
-        </section>
+        </motion.section>
 
         {/* ================================= ABOUT SECTION ================================= */}
-        <section id="about" className="space-y-12 scroll-mt-28">
+        <motion.section variants={revealItemVariants} id="about" className="space-y-12 scroll-mt-28">
           <div className="space-y-2 text-center max-w-2xl mx-auto">
             <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Profiler Overview ]</span>
             <h2 className="text-3xl sm:text-4xl font-display font-bold">About Me</h2>
@@ -335,7 +786,7 @@ export default function App() {
             </div>
 
           </div>
-        </section>
+        </motion.section>
 
         {/* ================================= PROJECTS SECTION ================================= */}
         <section id="projects" className="space-y-12 scroll-mt-28">
@@ -689,7 +1140,7 @@ export default function App() {
           </div>
         </section>
 
-      </main>
+      </motion.main>
 
       {/* ================================= FOOTER ================================= */}
       <footer className="border-t border-white/5 bg-[#090C13] py-10 relative z-20">
@@ -711,6 +1162,8 @@ export default function App() {
         </div>
       </footer>
 
-    </div>
+        </motion.div>
+      )}
+    </>
   );
 }
