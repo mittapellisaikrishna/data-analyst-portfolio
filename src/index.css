@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;850&family=Space+Grotesk:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;850;900&family=Space+Grotesk:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -15,6 +15,60 @@
     line-height: 1.6;
     overflow-x: hidden;
   }
+}
+
+/* Netflix Style Intro Overlay */
+.netflix-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: #000000;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.netflix-logo-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  color: #E50914;
+  letter-spacing: 0.25em;
+  text-shadow: 
+    0 0 20px rgba(229, 9, 20, 0.8),
+    0 0 40px rgba(229, 9, 20, 0.4);
+  transform: scale(0.65);
+  filter: blur(8px);
+  opacity: 0;
+  animation: netflixZoom 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Curvature effect similar to Netflix logo arc */
+.netflix-logo-wrap {
+  position: relative;
+  display: inline-block;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* Light streaks container */
+.netflix-streaks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 101;
+  opacity: 0;
+  animation: netflixStreaksFade 1.2s ease-in-out forwards;
+  animation-delay: 1.6s;
+}
+
+.netflix-streak {
+  position: absolute;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, #E50914, transparent);
+  box-shadow: 0 0 15px #E50914;
+  animation: netflixStreakMove 1s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
 }
 
 /* Frosted glass cards */
@@ -125,4 +179,43 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* Netflix keyframes */
+@keyframes netflixZoom {
+  0% {
+    transform: scale(0.65) translate3d(0,0,0);
+    filter: blur(8px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  70% {
+    transform: scale(1.1) translate3d(0,0,0);
+    filter: blur(0px);
+    opacity: 1;
+    letter-spacing: 0.35em;
+  }
+  100% {
+    transform: scale(25) translate3d(0,0,0);
+    filter: blur(22px);
+    opacity: 0;
+  }
+}
+
+@keyframes netflixStreaksFade {
+  0% { opacity: 0; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+@keyframes netflixStreakMove {
+  0% {
+    transform: translateY(-100%) scaleY(0.1);
+  }
+  100% {
+    transform: translateY(100%) scaleY(1.8);
+  }
 }
