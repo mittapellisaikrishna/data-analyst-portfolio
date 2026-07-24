@@ -37,6 +37,10 @@ export default function App() {
   const [activeSection, setActiveSection] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Subheading word rotator states
+  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
+  const [fadeTrigger, setFadeTrigger] = useState(true);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const heroTextRef = useRef<HTMLDivElement>(null);
@@ -128,6 +132,18 @@ export default function App() {
       setIsVideoMuted(!isVideoMuted);
     }
   };
+
+  useEffect(() => {
+    const rolesList = ["Data Analyst", "AI Developer", "Machine Learning Engineer"];
+    const roleTimer = setInterval(() => {
+      setFadeTrigger(false);
+      setTimeout(() => {
+        setCurrentRoleIndex((prev) => (prev + 1) % rolesList.length);
+        setFadeTrigger(true);
+      }, 300);
+    }, 2800);
+    return () => clearInterval(roleTimer);
+  }, []);
 
   useEffect(() => {
     if (introActive) return;
@@ -362,9 +378,13 @@ export default function App() {
                   Hi, I&apos;m <br />
                   <span className="apple-gradient-text">Sai Krishna</span>
                 </h1>
-                <p className="text-lg sm:text-xl font-medium text-[#94A3B8] font-display max-w-xl">
-                  Data Analyst | AI Developer | Machine Learning Engineer
-                </p>
+                <div className="h-8 overflow-hidden relative max-w-xl">
+                  <p className={`text-lg sm:text-xl font-medium text-[#4F9DFF] font-display transition-all duration-300 transform ${
+                    fadeTrigger ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+                  }`}>
+                    {["Data Analyst", "AI Developer", "Machine Learning Engineer"][currentRoleIndex]}
+                  </p>
+                </div>
                 <p className="text-sm sm:text-base text-[#94A3B8] font-light max-w-md leading-relaxed">
                   Transforming raw database arrays into metric analytics layouts. Scroll down to review system cases.
                 </p>
