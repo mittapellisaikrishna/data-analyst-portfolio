@@ -142,6 +142,23 @@ export default function App() {
         duration: 1
       }, 0);
 
+      // Morph transitions: Video container floats to bottom-right PIP
+      masterTimeline.to(videoWrapperRef.current, {
+        position: "fixed",
+        width: "240px",
+        height: "140px",
+        right: "40px",
+        bottom: "40px",
+        left: "auto",
+        top: "auto",
+        x: 0,
+        y: 0,
+        borderRadius: "20px",
+        borderColor: "rgba(255,255,255,0.15)",
+        zIndex: 40,
+        duration: 1.5
+      }, 0.5);
+
       // Morph transitions for project viewport overlays
       masterTimeline.fromTo(project1Ref.current, {
         y: "100vh",
@@ -319,69 +336,88 @@ export default function App() {
       </div>
 
       {/* ================================= HERO VIEWPORT SECTION ================================= */}
-      <div id="hero-root" ref={containerRef} className="min-h-screen lg:h-screen w-full relative overflow-hidden bg-black z-10 flex flex-col justify-between">
+      <div id="hero-root" ref={containerRef} className="min-h-screen lg:h-screen w-full relative bg-[#020205] z-10 flex flex-col justify-center">
         
-        {/* Full Viewport Background Video Container */}
-        <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-black">
-          <video 
-            ref={videoRef}
-            className="w-full h-full object-cover opacity-60"
-            src="./assets/IMG_1999.MP4"
-            autoPlay 
-            muted={isVideoMuted}
-            loop 
-            playsInline
-          />
-          {/* Mask overlay to ensure copy remains readable */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#020205]/60 via-[#020205]/75 to-[#020205] pointer-events-none"></div>
-        </div>
-
-        {/* Video Control Buttons Floating Over Backdrop */}
-        <div className="absolute bottom-10 right-10 z-30 flex items-center gap-3">
-          <button 
-            onClick={togglePlay}
-            className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[#F8FAFC] transition shadow-lg cursor-pointer flex items-center justify-center"
-            title={isPlaying ? "Pause Video" : "Play Video"}
-          >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          </button>
-          <button 
-            onClick={toggleMute}
-            className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[#F8FAFC] transition shadow-lg cursor-pointer flex items-center justify-center"
-            title={isVideoMuted ? "Unmute Video Audio" : "Mute Video Audio"}
-          >
-            {isVideoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
-        </div>
-
-        {/* Hero Title & Subheadings Overlay */}
-        <div 
-          ref={heroTextRef}
-          className="relative z-10 flex-1 flex flex-col justify-center px-6 sm:px-16 max-w-4xl space-y-6 select-none pt-32 lg:pt-0"
-        >
-          <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block font-semibold">
-            [ Immersive Spatial Showcase ]
-          </span>
-          <h1 className="text-5xl sm:text-6xl md:text-8.5xl font-display font-extrabold tracking-tight leading-none text-white hero-title">
-            Sai Krishna <br />
-            <span className="apple-gradient-text">Mittapelli</span>
-          </h1>
-          <p className="text-lg sm:text-xl font-medium text-[#94A3B8] font-display max-w-xl">
-            Data Analyst | AI Developer | Machine Learning Engineer
-          </p>
-          <p className="text-sm sm:text-base text-[#94A3B8] font-light max-w-md leading-relaxed">
-            Transforming raw database arrays into metric analytics layouts. Scroll down to review system cases.
-          </p>
+        <div className="w-full max-w-7xl mx-auto px-6 sm:px-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10 py-24 lg:py-0">
           
-          <div className="flex flex-wrap gap-4 pt-2">
-            <button 
-              onClick={() => scrollToSection('about')} 
-              className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>Explore Portfolio</span>
-              <ChevronDown className="w-4 h-4" />
-            </button>
+          {/* Left Column: Text & Buttons */}
+          <div 
+            ref={heroTextRef}
+            className="lg:col-span-6 space-y-6 text-left animate-blurReveal select-none"
+          >
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block font-semibold">
+              [ Immersive Spatial Showcase ]
+            </span>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-display font-extrabold tracking-tight leading-none text-white hero-title">
+              Hi, I&apos;m <br />
+              <span className="apple-gradient-text">Sai Krishna</span>
+            </h1>
+            <p className="text-lg sm:text-xl font-medium text-[#94A3B8] font-display max-w-xl">
+              Data Analyst | AI Developer | Machine Learning Engineer
+            </p>
+            <p className="text-sm sm:text-base text-[#94A3B8] font-light max-w-md leading-relaxed">
+              Transforming raw database arrays into metric analytics layouts. Scroll down to review system cases.
+            </p>
+            
+            <div className="flex flex-wrap gap-4 pt-2">
+              <button 
+                onClick={() => scrollToSection('about')} 
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Explore Portfolio</span>
+                <ChevronDown className="w-4 h-4 text-slate-900" />
+              </button>
+              <a 
+                href="https://drive.google.com/file/d/141KnMhWn8bsEoBWB309Beo3nTduMuZdr/view?usp=sharing"
+                target="_blank"
+                rel="noreferrer"
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-secondary flex items-center gap-2"
+              >
+                <FileText className="w-4.5 h-4.5 text-[#94A3B8]" />
+                <span>Resume</span>
+              </a>
+            </div>
           </div>
+
+          {/* Right Column: Full Video (Bright, side-aligned showcase) */}
+          <div className="lg:col-span-6 flex justify-center w-full">
+            <div 
+              ref={videoWrapperRef} 
+              className="relative w-full aspect-[9/13] max-w-[380px] rounded-[36px] overflow-hidden bg-black/20 border border-white/10 shadow-2xl transition-all duration-300"
+            >
+              <video 
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                src="./assets/IMG_1999.MP4"
+                autoPlay 
+                muted={isVideoMuted}
+                loop 
+                playsInline
+              />
+              
+              {/* Minimal overlay gradient only on the bottom to blend and hold controls */}
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
+
+              {/* Video Playback Controls overlay */}
+              <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2">
+                <button 
+                  onClick={togglePlay}
+                  className="p-2.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 text-white transition cursor-pointer flex items-center justify-center"
+                  title={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                </button>
+                <button 
+                  onClick={toggleMute}
+                  className="p-2.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 text-white transition cursor-pointer flex items-center justify-center"
+                  title={isVideoMuted ? "Unmute" : "Mute"}
+                >
+                  {isVideoMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* ================================= SCENE 3: CASE 1 (Desktop scroll overlays) ================================= */}
