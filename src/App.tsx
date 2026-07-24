@@ -28,11 +28,15 @@ import {
   VolumeX
 } from 'lucide-react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { AnimatePresence, motion } from 'motion/react';
 import { PERSONAL_INFO, TIMELINE_DATA, ADDITIONAL_PROJECTS, CERTIFICATIONS, FEATURED_PROJECT } from './data';
 
+gsap.registerPlugin(ScrollTrigger);
+
 const INTRO_SESSION_KEY = 'sai-krishna-portfolio-intro-entered';
+const HERO_VIDEO_SRC = '/data-analyst-portfolio/assets/IMG_1999.MP4';
 const introWords = ['Welcome', 'to', 'Sai Krishna', 'Portfolio'];
 const revealEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -413,12 +417,20 @@ export default function App() {
   const [subheadingIdx, setSubheadingIdx] = useState(0);
   const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [activeSection, setActiveSection] = useState('hero');
   const hasSeenIntro = typeof window !== 'undefined' && window.sessionStorage.getItem(INTRO_SESSION_KEY) === 'true';
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro);
   const [revealPortfolio, setRevealPortfolio] = useState(() => hasSeenIntro);
   const lenisRef = useRef<Lenis | null>(null);
 
   const subheadings = ["Data Analyst", "AI Developer", "Machine Learning Engineer"];
+  const navItems = [
+    { id: 'about', label: 'About' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'skills', label: 'Skills' },
+    { id: 'experience', label: 'Experience' },
+    { id: 'contact', label: 'Contact' }
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -446,6 +458,7 @@ export default function App() {
     let animationFrame = 0;
 
     lenisRef.current = lenis;
+    lenis.on('scroll', ScrollTrigger.update);
 
     const raf = (time: number) => {
       lenis.raf(time);
@@ -460,6 +473,55 @@ export default function App() {
       lenisRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!revealPortfolio) {
+      return;
+    }
+
+    const context = gsap.context(() => {
+      gsap.utils.toArray<HTMLElement>('.reveal-on-scroll').forEach((element) => {
+        gsap.fromTo(
+          element,
+          { autoAlpha: 0, y: 56, filter: 'blur(18px)' },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 1,
+            ease: 'power4.out',
+            scrollTrigger: {
+              trigger: element,
+              start: 'top 82%',
+              once: true
+            }
+          }
+        );
+      });
+
+      ['hero', ...navItems.map((item) => item.id)].forEach((id) => {
+        const trigger = document.getElementById(id);
+
+        if (!trigger) {
+          return;
+        }
+
+        ScrollTrigger.create({
+          trigger,
+          start: 'top center',
+          end: 'bottom center',
+          onEnter: () => setActiveSection(id),
+          onEnterBack: () => setActiveSection(id)
+        });
+      });
+    });
+
+    ScrollTrigger.refresh();
+
+    return () => {
+      context.revert();
+    };
+  }, [revealPortfolio]);
 
   useEffect(() => {
     document.body.classList.toggle('intro-locked', showIntro);
@@ -552,22 +614,36 @@ export default function App() {
         >
       
       {/* Background Aurora Spots */}
-      <div className="absolute top-[10%] left-[-15%] w-[60%] h-[50%] aurora-blur-1 rounded-full pointer-events-none z-0"></div>
-      <div className="absolute top-[40%] right-[-15%] w-[60%] h-[50%] aurora-blur-2 rounded-full pointer-events-none z-0"></div>
+      <div className="ambient-noise pointer-events-none"></div>
+      <div className="absolute top-[8%] left-[-15%] w-[62%] h-[52%] aurora-blur-1 rounded-full pointer-events-none z-0"></div>
+      <div className="absolute top-[36%] right-[-18%] w-[66%] h-[58%] aurora-blur-2 rounded-full pointer-events-none z-0"></div>
+      <div className="absolute bottom-[8%] left-[22%] w-[44%] h-[34%] aurora-blur-3 rounded-full pointer-events-none z-0"></div>
+      <div className="portfolio-particles pointer-events-none" aria-hidden="true">
+        {Array.from({ length: 26 }).map((_, index) => (
+          <span
+            key={index}
+            style={{
+              '--dot-left': `${(index * 23) % 100}%`,
+              '--dot-top': `${(index * 37) % 100}%`,
+              '--dot-delay': `${(index % 9) * 0.4}s`
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
 
       {/* Dynamic Cursor Light Overlay */}
       <div 
-        className="absolute inset-0 pointer-events-none z-10 opacity-30"
+        className="fixed inset-0 pointer-events-none z-10 opacity-50"
         style={{
-          background: `radial-gradient(circle 400px at ${mousePos.x}px ${mousePos.y}px, rgba(79, 157, 255, 0.06), transparent 80%)`
+          background: `radial-gradient(circle 520px at ${mousePos.x}px ${mousePos.y}px, rgba(79, 157, 255, 0.09), transparent 72%)`
         }}
       ></div>
 
       {/* ================================= NAVBAR ================================= */}
       <motion.div variants={revealItemVariants} className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-        <nav className={`floating-dock flex items-center justify-between px-6 py-3 rounded-full transition-all duration-500 ${
+        <nav className={`floating-dock flex items-center justify-between px-5 sm:px-6 py-3 rounded-full transition-all duration-500 ${
           isScrolled 
-            ? 'w-full max-w-2xl py-2.5 bg-[#0A0A0A]/90 border-white/10 shadow-2xl' 
+            ? 'w-full max-w-2xl py-2.5 bg-[#050505]/82 border-white/10 shadow-2xl' 
             : 'w-full max-w-3xl bg-white/5 border-white/5'
         }`}>
           <div 
@@ -578,12 +654,16 @@ export default function App() {
             <span>SAI KRISHNA MITTAPELLI</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-5 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">
-            <button onClick={() => scrollToSection('about')} className="hover:text-[#F8FAFC] transition cursor-pointer">About</button>
-            <button onClick={() => scrollToSection('projects')} className="hover:text-[#F8FAFC] transition cursor-pointer">Projects</button>
-            <button onClick={() => scrollToSection('skills')} className="hover:text-[#F8FAFC] transition cursor-pointer">Skills</button>
-            <button onClick={() => scrollToSection('experience')} className="hover:text-[#F8FAFC] transition cursor-pointer">Experience</button>
-            <button onClick={() => scrollToSection('contact')} className="hover:text-[#F8FAFC] transition cursor-pointer">Contact</button>
+          <div className="hidden sm:flex items-center gap-1 text-[10px] font-bold uppercase text-[#B0B0B0]">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
+                className={`nav-link ${activeSection === item.id ? 'is-active' : ''}`}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
 
           <a 
@@ -598,18 +678,18 @@ export default function App() {
       </motion.div>
 
       {/* ================================= MAIN CONTAINER ================================= */}
-      <motion.main variants={heroSequenceVariants} id="hero" className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-8 pt-28 md:pt-36 pb-20 space-y-36 md:space-y-48 relative z-20">
+      <motion.main variants={heroSequenceVariants} id="hero" className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-8 pt-24 md:pt-28 pb-20 space-y-36 md:space-y-48 relative z-20">
 
         {/* ================================= HERO SECTION ================================= */}
-        <motion.section variants={heroSequenceVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <motion.section variants={heroSequenceVariants} className="hero-stage grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-center min-h-[calc(100svh-7rem)]">
           
           {/* Left Text Detail */}
-          <motion.div variants={revealItemVariants} className="lg:col-span-7 space-y-6 text-left animate-blurReveal">
+          <motion.div variants={revealItemVariants} className="lg:col-span-7 space-y-7 text-left animate-blurReveal">
             <div className="space-y-3">
               <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block font-semibold">
                 [ Decision Intelligence Engine ]
               </span>
-              <h1 className="text-5xl sm:text-6xl md:text-7.5xl font-display font-extrabold tracking-tight leading-none text-[#F8FAFC]">
+              <h1 className="hero-title text-5xl sm:text-6xl md:text-7xl xl:text-8xl font-display font-extrabold tracking-tight leading-none text-[#F8FAFC]">
                 Hi, I&apos;m <br />
                 <span className="bg-gradient-to-r from-white via-slate-350 to-[#4F9DFF] bg-clip-text text-transparent">
                   Sai Krishna Mittapelli
@@ -631,7 +711,7 @@ export default function App() {
               </div>
             </div>
 
-            <p className="text-base sm:text-lg text-[#94A3B8] leading-relaxed max-w-xl font-light">
+            <p className="text-base sm:text-lg text-[#B0B0B0] leading-relaxed max-w-xl font-light">
               Transforming raw, unstructured business data into key operational indicators and high-fidelity dashboards to optimize decision velocity.
             </p>
 
@@ -658,7 +738,7 @@ export default function App() {
                   href="https://www.linkedin.com/in/saikrishna-mittapelli/"
                   target="_blank"
                   rel="noreferrer"
-                  className="p-3 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] transition shadow-md"
+                  className="social-orb p-3 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] transition shadow-md"
                   title="LinkedIn"
                 >
                   <Linkedin className="w-4.5 h-4.5" />
@@ -667,7 +747,7 @@ export default function App() {
                   href="https://github.com/mittapellisaikrishna"
                   target="_blank"
                   rel="noreferrer"
-                  className="p-3 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] transition shadow-md"
+                  className="social-orb p-3 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] transition shadow-md"
                   title="GitHub"
                 >
                   <Github className="w-4.5 h-4.5" />
@@ -676,62 +756,59 @@ export default function App() {
             </motion.div>
           </motion.div>
 
-          {/* Right Floating Spatial Profile Card */}
-          <motion.div variants={revealItemVariants} className="lg:col-span-5 flex justify-center">
-            <div className="spatial-glass spatial-glass-hover p-6 w-full max-w-[360px] space-y-6 relative animate-float">
-              
-              {/* Profile emblem placeholder */}
-              <div className="w-full aspect-[4/3] bg-gradient-to-br from-[#4F9DFF]/10 to-[#7C3AED]/5 rounded-2xl border border-white/5 flex items-center justify-center relative overflow-hidden group">
-                <Database className="w-16 h-16 text-[#4F9DFF] opacity-80" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] to-transparent opacity-40"></div>
+          {/* Right Floating Hero Video */}
+          <motion.div variants={revealItemVariants} className="lg:col-span-5 flex justify-center lg:justify-end">
+            <div className="hero-video-shell spatial-glass spatial-glass-hover w-full max-w-[440px] relative animate-float">
+              <div className="hero-video-reflection"></div>
+              <div className="hero-video-frame">
+                <video
+                  className="hero-video"
+                  src={HERO_VIDEO_SRC}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label="Sai Krishna talking introduction video"
+                />
+                <div className="hero-video-glass"></div>
               </div>
 
-              <div className="space-y-4">
+              <div className="hero-video-caption">
                 <div>
                   <h3 className="text-base font-bold font-display text-white">Sai Krishna Mittapelli</h3>
-                  <span className="text-[10px] font-mono text-[#94A3B8] uppercase block">Decision Support Engineer</span>
+                  <span className="text-[10px] font-mono text-[#B0B0B0] uppercase block">Decision Support Engineer</span>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/5 text-xs font-mono">
-                  <div>
-                    <span className="text-[8px] text-[#94A3B8] block uppercase">Location</span>
-                    <span className="text-white block mt-0.5 font-sans">Hyderabad, IN</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] text-[#94A3B8] block uppercase">Status</span>
-                    <span className="text-emerald-400 block mt-0.5 font-sans font-medium flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                      Open for Offers
-                    </span>
-                  </div>
-                </div>
+                <span className="text-emerald-400 text-[10px] font-sans font-medium flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                  Open for Offers
+                </span>
               </div>
-
             </div>
           </motion.div>
 
         </motion.section>
 
         {/* ================================= ABOUT SECTION ================================= */}
-        <motion.section variants={revealItemVariants} id="about" className="space-y-12 scroll-mt-28">
-          <div className="space-y-2 text-center max-w-2xl mx-auto">
+        <motion.section variants={revealItemVariants} id="about" className="section-panel reveal-on-scroll space-y-12 scroll-mt-28">
+          <div className="section-heading space-y-2 text-center max-w-2xl mx-auto">
             <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Profiler Overview ]</span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold">About Me</h2>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold">About Me</h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-4xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto items-stretch">
             
             {/* Visual Glass Profile Panel */}
-            <div className="lg:col-span-8 spatial-glass p-8 flex flex-col justify-between space-y-6">
+            <div className="lg:col-span-8 spatial-glass p-8 sm:p-10 flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-[#4F9DFF]">
                   <GraduationCap className="w-6 h-6" />
                   <span className="text-xs font-mono font-bold uppercase tracking-wider">Educational Summary</span>
                 </div>
-                <h4 className="text-lg font-bold text-white font-display italic leading-snug">
+                <h4 className="text-xl sm:text-2xl font-bold text-white font-display italic leading-snug">
                   {PERSONAL_INFO.about.education}
                 </h4>
-                <p className="text-sm text-[#94A3B8] font-light leading-relaxed">
+                <p className="text-sm sm:text-base text-[#B0B0B0] font-light leading-relaxed">
                   I construct automated ETL systems and Power BI dashboards, translating multi-million-row transactional tables into clear executive business indicators. Bypassing anti-scrape web blocks, normalising sports catalogs, and compiling SQL Views to track gross profit margins.
                 </p>
               </div>
@@ -752,7 +829,7 @@ export default function App() {
 
             {/* Metrics counter grid */}
             <div className="lg:col-span-4 grid grid-cols-2 gap-4">
-              <div className="spatial-glass p-5 flex flex-col justify-between">
+              <div className="metric-card spatial-glass p-5 flex flex-col justify-between">
                 <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">SQL Queries</span>
                 <div>
                   <span className="text-2xl font-bold font-display text-white">90%</span>
@@ -760,7 +837,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="spatial-glass p-5 flex flex-col justify-between">
+              <div className="metric-card spatial-glass p-5 flex flex-col justify-between">
                 <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">ETL Automation</span>
                 <div>
                   <span className="text-2xl font-bold font-display text-white">96%</span>
@@ -768,7 +845,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="spatial-glass p-5 flex flex-col justify-between">
+              <div className="metric-card spatial-glass p-5 flex flex-col justify-between">
                 <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">Data Rows</span>
                 <div>
                   <span className="text-2xl font-bold font-display text-white">Millions</span>
@@ -776,7 +853,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="spatial-glass p-5 flex flex-col justify-between">
+              <div className="metric-card spatial-glass p-5 flex flex-col justify-between">
                 <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">Certifications</span>
                 <div>
                   <span className="text-2xl font-bold font-display text-white">4</span>
@@ -789,25 +866,25 @@ export default function App() {
         </motion.section>
 
         {/* ================================= PROJECTS SECTION ================================= */}
-        <section id="projects" className="space-y-12 scroll-mt-28">
-          <div className="space-y-2 text-center max-w-2xl mx-auto">
+        <section id="projects" className="section-panel reveal-on-scroll space-y-14 scroll-mt-28">
+          <div className="section-heading space-y-2 text-center max-w-2xl mx-auto">
             <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ SaaS Product Launch ]</span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold">Featured Projects</h2>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold">Featured Projects</h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-12 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 gap-16 max-w-6xl mx-auto">
             {allProjects.map((proj) => {
               const isExpanded = !!expandedProjects[proj.id];
 
               return (
                 <div 
                   key={proj.id}
-                  className="spatial-glass overflow-hidden flex flex-col hover:border-[#4F9DFF]/20"
+                  className="project-showcase spatial-glass reveal-on-scroll overflow-hidden flex flex-col lg:grid lg:grid-cols-[1.08fr_0.92fr] hover:border-[#4F9DFF]/20"
                 >
                   
                   {/* Clean Visual Dashboard Mockup Header */}
-                  <div className="w-full bg-[#0E131F] border-b border-white/5 aspect-[16/6] relative overflow-hidden group">
-                    <div className="absolute inset-0 p-5 flex flex-col justify-between font-mono text-[9px] text-[#94A3B8] img-zoom">
+                  <div className="project-device w-full bg-[#0E131F] border-b lg:border-b-0 lg:border-r border-white/5 min-h-[360px] relative overflow-hidden group">
+                    <div className="absolute inset-0 p-5 sm:p-7 flex flex-col justify-between font-mono text-[9px] text-[#B0B0B0] img-zoom">
                       <div className="flex items-center justify-between border-b border-white/5 pb-2">
                         <div className="flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
@@ -819,7 +896,7 @@ export default function App() {
                       </div>
 
                       {/* Mockup charting representation */}
-                      <div className="grid grid-cols-3 gap-4 pt-2">
+                      <div className="project-mock-grid grid grid-cols-3 gap-4 pt-2">
                         <div className="bg-white/5 p-3 rounded-xl border border-white/5">
                           <span>ROI INDEX</span>
                           <div className="text-sm font-bold text-white font-display mt-0.5">{proj.metrics?.[0]?.value || '100%'}</div>
@@ -837,12 +914,12 @@ export default function App() {
                   </div>
 
                   {/* Body Content */}
-                  <div className="p-6 sm:p-8 space-y-6">
+                  <div className="p-6 sm:p-8 lg:p-10 space-y-7 flex flex-col justify-center">
                     <div className="space-y-2">
-                      <h3 className="text-xl sm:text-2xl font-bold font-display text-white">
+                      <h3 className="text-2xl sm:text-3xl font-bold font-display text-white">
                         {proj.title}
                       </h3>
-                      <p className="text-sm text-[#94A3B8] leading-relaxed font-light">
+                      <p className="text-sm sm:text-base text-[#B0B0B0] leading-relaxed font-light">
                         {proj.description}
                       </p>
                     </div>
@@ -852,7 +929,7 @@ export default function App() {
                       {proj.tech.map((t) => (
                         <span 
                           key={t}
-                          className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-mono text-[#94A3B8]"
+                          className="tech-chip px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-mono text-[#B0B0B0]"
                         >
                           {t}
                         </span>
@@ -861,7 +938,7 @@ export default function App() {
 
                     {/* Business impact */}
                     {proj.impact && (
-                      <div className="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-start gap-2 text-xs text-[#94A3B8] font-light leading-relaxed">
+                      <div className="p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-start gap-2 text-xs text-[#B0B0B0] font-light leading-relaxed">
                         <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                         <div>
                           <span className="text-emerald-400 font-bold uppercase font-mono text-[9px] tracking-wider block">Business Impact</span>
@@ -902,7 +979,7 @@ export default function App() {
                     <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-4">
                       <button 
                         onClick={() => toggleProject(proj.id)}
-                        className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#4F9DFF] hover:text-[#7C3AED] transition cursor-pointer"
+                        className="magnetic-link inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#4F9DFF] hover:text-white transition cursor-pointer"
                       >
                         <span>{isExpanded ? 'Hide Specs' : 'Read More'}</span>
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -914,7 +991,7 @@ export default function App() {
                             href={proj.githubUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-mono font-medium text-[#94A3B8] hover:text-[#4F9DFF] transition"
+                            className="magnetic-link inline-flex items-center gap-1 text-xs font-mono font-medium text-[#B0B0B0] hover:text-[#4F9DFF] transition"
                           >
                             <Github className="w-4 h-4" />
                             <span>Codebase</span>
@@ -925,7 +1002,7 @@ export default function App() {
                             href={proj.liveUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-mono font-medium text-[#94A3B8] hover:text-[#4F9DFF] transition"
+                            className="magnetic-link inline-flex items-center gap-1 text-xs font-mono font-medium text-[#B0B0B0] hover:text-[#4F9DFF] transition"
                           >
                             <ExternalLink className="w-4 h-4" />
                             <span>Live Demo</span>
@@ -943,17 +1020,17 @@ export default function App() {
         </section>
 
         {/* ================================= SKILLS SECTION ================================= */}
-        <section id="skills" className="space-y-12 scroll-mt-28">
-          <div className="space-y-2 text-center max-w-2xl mx-auto">
+        <section id="skills" className="section-panel reveal-on-scroll space-y-12 scroll-mt-28">
+          <div className="section-heading space-y-2 text-center max-w-2xl mx-auto">
             <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Competencies bubbles ]</span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold">Skills Inventory</h2>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold">Skills Inventory</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {skillGroups.map((group, idx) => (
               <div 
                 key={idx}
-                className="spatial-glass p-5 flex flex-col justify-between space-y-4 hover:border-[#4F9DFF]/20"
+                className="skill-card spatial-glass p-5 flex flex-col justify-between space-y-4 hover:border-[#4F9DFF]/20"
               >
                 <div className="flex items-center gap-2 pb-2 border-b border-white/5">
                   {group.icon}
@@ -976,15 +1053,15 @@ export default function App() {
         </section>
 
         {/* ================================= EXPERIENCE SECTION ================================= */}
-        <section id="experience" className="space-y-12 scroll-mt-28">
-          <div className="space-y-2 text-center max-w-2xl mx-auto">
+        <section id="experience" className="section-panel reveal-on-scroll space-y-12 scroll-mt-28">
+          <div className="section-heading space-y-2 text-center max-w-2xl mx-auto">
             <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Apple Timeline ]</span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold">Experience</h2>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold">Experience</h2>
           </div>
 
-          <div className="max-w-2xl mx-auto relative pl-6 sm:pl-8 border-l border-white/5 space-y-10 py-2">
+          <div className="timeline-rail max-w-3xl mx-auto relative pl-6 sm:pl-8 border-l border-white/5 space-y-10 py-2">
             {TIMELINE_DATA.map((step) => (
-              <div key={step.id} className="relative group space-y-3">
+              <div key={step.id} className="timeline-card relative group space-y-3">
                 {/* Timeline visual marker */}
                 <div className="absolute -left-[30px] sm:-left-[37px] top-1.5 w-3.5 h-3.5 rounded-full bg-[#0A0A0A] border border-[#4F9DFF] group-hover:bg-[#4F9DFF] transition-colors duration-300"></div>
 
@@ -1019,17 +1096,17 @@ export default function App() {
         </section>
 
         {/* ================================= CERTIFICATIONS SECTION ================================= */}
-        <section id="certifications" className="space-y-12 scroll-mt-28">
-          <div className="space-y-2 text-center max-w-2xl mx-auto">
+        <section id="certifications" className="section-panel reveal-on-scroll space-y-12 scroll-mt-28">
+          <div className="section-heading space-y-2 text-center max-w-2xl mx-auto">
             <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Verified Badges ]</span>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold">Certifications</h2>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold">Certifications</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="cert-scroll flex gap-5 overflow-x-auto pb-4 max-w-6xl mx-auto snap-x snap-mandatory">
             {CERTIFICATIONS.map((cert) => (
               <div 
                 key={cert.id}
-                className="spatial-glass p-5 flex flex-col justify-between hover:border-[#4F9DFF]/20 hover:-translate-y-1 transition-all duration-300 relative group"
+                className="cert-card spatial-glass p-5 flex flex-col justify-between hover:border-[#4F9DFF]/20 hover:-translate-y-1 transition-all duration-300 relative group snap-center"
               >
                 <div className="space-y-4">
                   <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#4F9DFF]">
@@ -1063,9 +1140,9 @@ export default function App() {
         </section>
 
         {/* ================================= CONTACT SECTION ================================= */}
-        <section id="contact" className="space-y-12 scroll-mt-28">
+        <section id="contact" className="section-panel reveal-on-scroll space-y-12 scroll-mt-28">
           
-          <div className="spatial-glass p-8 sm:p-12 max-w-3xl mx-auto text-center space-y-8 relative overflow-hidden group">
+          <div className="contact-panel spatial-glass p-8 sm:p-12 max-w-4xl mx-auto text-center space-y-8 relative overflow-hidden group">
             
             <div className="space-y-3">
               <h3 className="text-2xl font-bold font-display text-white">Let&apos;s build something data-driven together.</h3>
