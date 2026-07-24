@@ -16,10 +16,11 @@ import {
   ExternalLink,
   ChevronDown,
   Brain,
-  Code,
   Layers,
   LineChart,
   Wrench,
+  Play,
+  Pause,
   Volume2,
   VolumeX
 } from 'lucide-react';
@@ -31,13 +32,13 @@ import Lenis from 'lenis';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
-  const [soundOn, setSoundOn] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
   const [activeTab, setActiveTab] = useState<'metrics' | 'specs'>('metrics');
   const [activeSection, setActiveSection] = useState('home');
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscillatorRef = useRef<OscillatorNode | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const heroTextRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
@@ -48,13 +49,51 @@ export default function App() {
 
   const horizontalSectionRef = useRef<HTMLDivElement>(null);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
-  const skillsSectionRef = useRef<HTMLDivElement>(null);
   const timelineRailRef = useRef<HTMLDivElement>(null);
 
   const allProjects = [FEATURED_PROJECT, ...ADDITIONAL_PROJECTS];
 
-  // Lenis Smooth Scroll & GSAP ScrollTrigger Integration
+  const skillChips = [
+    { name: "SQL", category: "Data" },
+    { name: "Python", category: "AI/ML" },
+    { name: "Power BI", category: "BI" },
+    { name: "Excel", category: "BI" },
+    { name: "Tableau", category: "BI" },
+    { name: "Pandas", category: "Data" },
+    { name: "NumPy", category: "Data" },
+    { name: "Scikit Learn", category: "AI/ML" },
+    { name: "Statistics", category: "AI/ML" },
+    { name: "Machine Learning", category: "AI/ML" },
+    { name: "ETL", category: "Data" },
+    { name: "Data Cleaning", category: "Data" }
+  ];
+
+  // Video playback triggers
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play().catch(e => console.log("Video play failed:", e));
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isVideoMuted;
+      setIsVideoMuted(!isVideoMuted);
+    }
+  };
+
   useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30);
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    // Initialize Lenis smooth scroll
     const lenis = new Lenis({
       duration: 1.4,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -73,125 +112,101 @@ export default function App() {
     });
     gsap.ticker.lagSmoothing(0);
 
-    // Timeline 1: Pinned Cinematic Scenes (Scene 1 to Scene 5)
-    // Total scroll duration: 400vh
-    const masterTimeline = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top top",
-        end: "+=400%",
-        pin: true,
-        scrub: 1,
-        onUpdate: (self) => {
-          // Track active section state based on scroll progress
-          if (self.progress < 0.2) setActiveSection('home');
-          else setActiveSection('projects');
+    // Responsive GSAP animations: Pinned sequences run only on desktop (width > 1024px)
+    const isDesktop = window.innerWidth > 1024;
+
+    let masterTimeline: gsap.core.Timeline | null = null;
+    let horizontalScroll: gsap.core.Tween | null = null;
+    let timelineRailScroll: gsap.core.Tween | null = null;
+
+    if (isDesktop) {
+      masterTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top top",
+          end: "+=350%",
+          pin: true,
+          scrub: 1,
+          onUpdate: (self) => {
+            if (self.progress < 0.25) setActiveSection('home');
+            else setActiveSection('projects');
+          }
         }
-      }
-    });
+      });
 
-    // SCENE 2: Hero text fades, Video scale up
-    masterTimeline.to(heroTextRef.current, {
-      opacity: 0,
-      scale: 0.9,
-      y: -50,
-      duration: 1
-    }, 0);
+      // Hero text fades as scroll progresses
+      masterTimeline.to(heroTextRef.current, {
+        opacity: 0,
+        scale: 0.95,
+        y: -40,
+        duration: 1
+      }, 0);
 
-    masterTimeline.to(videoWrapperRef.current, {
-      width: "100vw",
-      height: "100vh",
-      borderRadius: "0px",
-      borderColor: "rgba(255,255,255,0)",
-      duration: 1.5,
-      y: 0,
-      x: 0
-    }, 0.2);
+      // Morph transitions for project viewport overlays
+      masterTimeline.fromTo(project1Ref.current, {
+        y: "100vh",
+        scale: 0.9,
+        opacity: 0
+      }, {
+        y: "0vh",
+        scale: 1,
+        opacity: 1,
+        duration: 2
+      }, 1);
 
-    // SCENE 3: Video shrinks to corner, Project 1 grows from underneath
-    masterTimeline.to(videoWrapperRef.current, {
-      width: "240px",
-      height: "140px",
-      right: "40px",
-      bottom: "40px",
-      left: "auto",
-      top: "auto",
-      x: 0,
-      y: 0,
-      borderRadius: "20px",
-      borderColor: "rgba(255,255,255,0.15)",
-      zIndex: 40,
-      duration: 1.5
-    }, 2);
+      masterTimeline.to(project1Ref.current, {
+        y: "-100vh",
+        scale: 0.9,
+        opacity: 0,
+        duration: 2
+      }, 4);
 
-    masterTimeline.fromTo(project1Ref.current, {
-      y: "100vh",
-      scale: 0.85,
-      opacity: 0
-    }, {
-      y: "0vh",
-      scale: 1,
-      opacity: 1,
-      duration: 2
-    }, 2.2);
+      masterTimeline.fromTo(project2Ref.current, {
+        y: "100vh",
+        scale: 0.9,
+        opacity: 0
+      }, {
+        y: "0vh",
+        scale: 1,
+        opacity: 1,
+        duration: 2
+      }, 4.2);
 
-    // SCENE 4: Project 1 morphs into Project 2
-    masterTimeline.to(project1Ref.current, {
-      y: "-100vh",
-      scale: 0.9,
-      opacity: 0,
-      duration: 2
-    }, 5);
+      masterTimeline.to(project2Ref.current, {
+        y: "-100vh",
+        scale: 0.9,
+        opacity: 0,
+        duration: 2
+      }, 7);
 
-    masterTimeline.fromTo(project2Ref.current, {
-      y: "100vh",
-      scale: 0.85,
-      opacity: 0
-    }, {
-      y: "0vh",
-      scale: 1,
-      opacity: 1,
-      duration: 2
-    }, 5.2);
+      masterTimeline.fromTo(project3Ref.current, {
+        y: "100vh",
+        scale: 0.9,
+        opacity: 0
+      }, {
+        y: "0vh",
+        scale: 1,
+        opacity: 1,
+        duration: 2
+      }, 7.2);
 
-    // SCENE 5: Project 2 morphs into Project 3
-    masterTimeline.to(project2Ref.current, {
-      y: "-100vh",
-      scale: 0.9,
-      opacity: 0,
-      duration: 2
-    }, 8);
-
-    masterTimeline.fromTo(project3Ref.current, {
-      y: "100vh",
-      scale: 0.85,
-      opacity: 0
-    }, {
-      y: "0vh",
-      scale: 1,
-      opacity: 1,
-      duration: 2
-    }, 8.2);
-
-    // SCENE 6: Horizontal Gallery Scroll Pinning
-    const horizontalWidth = horizontalScrollRef.current ? horizontalScrollRef.current.scrollWidth - window.innerWidth : 1000;
-    gsap.to(horizontalScrollRef.current, {
-      x: () => -horizontalWidth - 100,
-      ease: "none",
-      scrollTrigger: {
-        trigger: horizontalSectionRef.current,
-        start: "top top",
-        end: () => `+=${horizontalWidth}`,
-        pin: true,
-        scrub: 1,
-        onToggle: (self) => {
-          if (self.isActive) setActiveSection('projects');
+      // Horizontal Project Slider pinning
+      const horizontalWidth = horizontalScrollRef.current ? horizontalScrollRef.current.scrollWidth - window.innerWidth : 1000;
+      horizontalScroll = gsap.to(horizontalScrollRef.current, {
+        x: () => -horizontalWidth - 100,
+        ease: "none",
+        scrollTrigger: {
+          trigger: horizontalSectionRef.current,
+          start: "top top",
+          end: () => `+=${horizontalWidth}`,
+          pin: true,
+          scrub: 1
         }
-      }
-    });
+      });
+    }
 
-    // SCENE 8: Timeline Rail Drawing
-    gsap.fromTo(timelineRailRef.current, {
+    // Scroll triggered experience vertical rail drawing
+    timelineRailScroll = gsap.fromTo(timelineRailRef.current, {
       height: "0%"
     }, {
       height: "100%",
@@ -199,14 +214,11 @@ export default function App() {
         trigger: "#experience",
         start: "top center",
         end: "bottom center",
-        scrub: 1,
-        onToggle: (self) => {
-          if (self.isActive) setActiveSection('experience');
-        }
+        scrub: 1
       }
     });
 
-    // Active Section Tracking
+    // Simple Section tracking
     const sections = ['about', 'skills', 'certifications', 'contact'];
     sections.forEach(sec => {
       ScrollTrigger.create({
@@ -220,6 +232,7 @@ export default function App() {
     });
 
     return () => {
+      window.removeEventListener('scroll', handleScroll);
       lenis.destroy();
       ScrollTrigger.getAll().forEach(t => t.kill());
     };
@@ -232,72 +245,21 @@ export default function App() {
     }
   };
 
-  // Web Audio programmatically synthesizes a very soft ambient sound wave (hum)
-  const toggleSound = () => {
-    if (soundOn) {
-      if (oscillatorRef.current) {
-        oscillatorRef.current.stop();
-        oscillatorRef.current.disconnect();
-      }
-      setSoundOn(false);
-    } else {
-      try {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioContextClass();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        // 80Hz soft ambient synth tone
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(80, ctx.currentTime);
-
-        // Low volume setting to maintain ambient mood
-        gain.gain.setValueAtTime(0.06, ctx.currentTime);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-
-        oscillatorRef.current = osc;
-        gainNodeRef.current = gain;
-        setSoundOn(true);
-      } catch (e) {
-        console.error("Audio Context failed to start: ", e);
-      }
-    }
-  };
-
-  const skillChips = [
-    { name: "SQL", category: "Data" },
-    { name: "Python", category: "AI/ML" },
-    { name: "Power BI", category: "BI" },
-    { name: "Excel", category: "BI" },
-    { name: "Tableau", category: "BI" },
-    { name: "Pandas", category: "Data" },
-    { name: "NumPy", category: "Data" },
-    { name: "Scikit Learn", category: "AI/ML" },
-    { name: "Statistics", category: "AI/ML" },
-    { name: "Machine Learning", category: "AI/ML" },
-    { name: "ETL", category: "Data" },
-    { name: "Data Cleaning", category: "Data" }
-  ];
-
   return (
     <div className="min-h-screen text-[#F8FAFC] flex flex-col font-sans relative select-none">
       
-      {/* Ambient noise texture */}
+      {/* Ambient particles background */}
       <div className="ambient-noise"></div>
 
-      {/* Dynamic spotlights */}
+      {/* Aurora spotlight blurs */}
       <div className="absolute top-[10%] left-[5%] w-[55%] h-[40%] aurora-blur-1 rounded-full pointer-events-none z-0"></div>
       <div className="absolute top-[50%] right-[5%] w-[55%] h-[40%] aurora-blur-2 rounded-full pointer-events-none z-0"></div>
 
       {/* ================================= NAVIGATION DOCK ================================= */}
-      <div className="fixed top-8 left-0 right-0 z-50 flex justify-center px-4">
-        <nav className="floating-dock flex items-center justify-between px-6 py-3 rounded-full w-full max-w-3xl">
+      <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+        <nav className={`floating-dock flex items-center justify-between px-6 py-2.5 rounded-full w-full max-w-3xl transition-all duration-300 ${
+          isScrolled ? 'bg-[#020205]/95 border-white/10 shadow-2xl' : 'bg-white/5 border-white/5'
+        }`}>
           <div 
             onClick={() => scrollToSection('hero-root')} 
             className="font-display font-bold text-xs tracking-wider text-[#4F9DFF] hover:text-[#7C3AED] transition cursor-pointer flex items-center gap-2"
@@ -306,7 +268,7 @@ export default function App() {
             <span>SAI KRISHNA MITTAPELLI</span>
           </div>
 
-          <div className="hidden md:flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">
+          <div className="hidden md:flex items-center gap-5 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">
             <button 
               onClick={() => scrollToSection('hero-root')} 
               className={`transition cursor-pointer ${activeSection === 'home' ? 'text-[#4F9DFF]' : 'hover:text-white'}`}
@@ -345,94 +307,104 @@ export default function App() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Audio Toggle */}
-            <button 
-              onClick={toggleSound}
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 text-[#94A3B8] hover:text-[#4F9DFF] transition-all"
-              title="Ambient sound hum toggle"
-            >
-              {soundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-            </button>
-            <a 
-              href="https://drive.google.com/file/d/141KnMhWn8bsEoBWB309Beo3nTduMuZdr/view?usp=sharing"
-              target="_blank"
-              rel="noreferrer"
-              className="px-4 py-1.5 text-xs font-semibold rounded-full bg-[#4F9DFF]/10 hover:bg-[#4F9DFF]/25 text-[#4F9DFF] border border-[#4F9DFF]/20 hover:border-[#4F9DFF]/40 transition-all shadow-lg"
-            >
-              Resume
-            </a>
-          </div>
+          <a 
+            href="https://drive.google.com/file/d/141KnMhWn8bsEoBWB309Beo3nTduMuZdr/view?usp=sharing"
+            target="_blank"
+            rel="noreferrer"
+            className="px-4 py-1.5 text-xs font-semibold rounded-full bg-[#4F9DFF]/10 hover:bg-[#4F9DFF]/25 text-[#4F9DFF] border border-[#4F9DFF]/20 hover:border-[#4F9DFF]/40 transition-all shadow-lg"
+          >
+            Resume
+          </a>
         </nav>
       </div>
 
-      {/* ================================= CINEMATIC PINNED WRAPPER (SCENE 1 - 5) ================================= */}
-      <div id="hero-root" ref={containerRef} className="h-screen w-full relative overflow-hidden bg-black z-10">
+      {/* ================================= HERO VIEWPORT SECTION ================================= */}
+      <div id="hero-root" ref={containerRef} className="min-h-screen lg:h-screen w-full relative overflow-hidden bg-black z-10 flex flex-col justify-between">
         
-        {/* SCENE 1: Cinematic Left Hero Detail */}
+        {/* Full Viewport Background Video Container */}
+        <div ref={videoWrapperRef} className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-black">
+          <video 
+            ref={videoRef}
+            className="w-full h-full object-cover opacity-60"
+            src="./assets/IMG_1999.MP4"
+            autoPlay 
+            muted={isVideoMuted}
+            loop 
+            playsInline
+          />
+          {/* Mask overlay to ensure copy remains readable */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#020205]/60 via-[#020205]/75 to-[#020205] pointer-events-none"></div>
+        </div>
+
+        {/* Video Control Buttons Floating Over Backdrop */}
+        <div className="absolute bottom-10 right-10 z-30 flex items-center gap-3">
+          <button 
+            onClick={togglePlay}
+            className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[#F8FAFC] transition shadow-lg cursor-pointer flex items-center justify-center"
+            title={isPlaying ? "Pause Video" : "Play Video"}
+          >
+            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </button>
+          <button 
+            onClick={toggleMute}
+            className="p-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[#F8FAFC] transition shadow-lg cursor-pointer flex items-center justify-center"
+            title={isVideoMuted ? "Unmute Video Audio" : "Mute Video Audio"}
+          >
+            {isVideoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {/* Hero Title & Subheadings Overlay */}
         <div 
           ref={heroTextRef}
-          className="absolute inset-0 flex flex-col justify-center px-8 sm:px-16 max-w-4xl space-y-6 z-20 select-none pointer-events-none"
+          className="relative z-10 flex-1 flex flex-col justify-center px-6 sm:px-16 max-w-4xl space-y-6 select-none pt-32 lg:pt-0"
         >
           <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block font-semibold">
-            [ Apple Keynote Showcase ]
+            [ Immersive Spatial Showcase ]
           </span>
-          <h1 className="text-6xl sm:text-7xl md:text-8.5xl font-display font-extrabold tracking-tight leading-none text-white">
+          <h1 className="text-5xl sm:text-6xl md:text-8.5xl font-display font-extrabold tracking-tight leading-none text-white hero-title">
             Sai Krishna <br />
             <span className="apple-gradient-text">Mittapelli</span>
           </h1>
           <p className="text-lg sm:text-xl font-medium text-[#94A3B8] font-display max-w-xl">
             Data Analyst | AI Developer | Machine Learning Engineer
           </p>
-          <p className="text-sm sm:text-base text-[#94A3B8] font-light max-w-md">
-            Transforming raw database arrays into metric analytics layouts. Keep scrolling to launch the product showcase.
+          <p className="text-sm sm:text-base text-[#94A3B8] font-light max-w-md leading-relaxed">
+            Transforming raw database arrays into metric analytics layouts. Scroll down to review system cases.
           </p>
-        </div>
-
-        {/* Talking Introduction Video inside Floating Apple Intelligence Glass Frame */}
-        <div 
-          ref={videoWrapperRef}
-          className="absolute w-[360px] h-[520px] rounded-[32px] border border-white/10 bg-white/5 shadow-2xl overflow-hidden left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 transition-all duration-300 pointer-events-auto"
-        >
-          <video 
-            className="w-full h-full object-cover"
-            src="./assets/IMG_1999.MP4"
-            autoPlay 
-            muted 
-            loop 
-            playsInline
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
           
-          {/* Status badge in container overlay */}
-          <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5 pointer-events-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-            <span className="text-[8px] font-mono text-slate-350 tracking-wider">TELEMETRY: ONLINE</span>
+          <div className="flex flex-wrap gap-4 pt-2">
+            <button 
+              onClick={() => scrollToSection('about')} 
+              className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Explore Portfolio</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* ================================= SCENE 3: PROJECT 1 PROFILER ================================= */}
+        {/* ================================= SCENE 3: CASE 1 (Desktop scroll overlays) ================================= */}
         <div 
           ref={project1Ref}
-          className="absolute inset-0 w-full h-full bg-[#0A0D14] flex flex-col justify-center px-8 sm:px-16 z-30 opacity-0 pointer-events-none"
+          className="absolute inset-0 w-full h-full bg-[#0A0D14] flex flex-col justify-center px-6 sm:px-16 z-20 opacity-0 pointer-events-none hidden lg:flex"
         >
-          {/* Background image preview representing full viewport */}
           <div className="absolute inset-0 bg-[#060A13] opacity-60"></div>
-          <div className="relative z-10 max-w-4xl space-y-6">
+          <div className="relative z-10 max-w-4xl space-y-5">
             <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">01 / FEATURED CASE</span>
-            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight leading-none uppercase">
+            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight uppercase leading-none">
               {FEATURED_PROJECT.title}
             </h2>
-            <p className="text-base sm:text-lg text-[#94A3B8] max-w-2xl font-light leading-relaxed">
+            <p className="text-base text-[#94A3B8] max-w-2xl font-light">
               {FEATURED_PROJECT.description}
             </p>
             
-            <div className="p-5 rounded-3xl bg-white/5 border border-white/5 max-w-xl text-xs font-mono text-[#94A3B8]">
-              <span className="text-[#4F9DFF] uppercase font-bold tracking-wider block mb-1">Business Impact Delivered</span>
+            <div className="p-4.5 rounded-2xl bg-white/5 border border-white/5 max-w-xl text-xs font-mono text-[#94A3B8]">
+              <span className="text-[#4F9DFF] uppercase font-bold tracking-wider block mb-1">Business Impact</span>
               {FEATURED_PROJECT.impact?.[0]}
             </div>
 
-            <div className="flex flex-wrap gap-2.5 pt-2">
+            <div className="flex flex-wrap gap-2">
               {FEATURED_PROJECT.tech.map((t) => (
                 <span key={t} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-[#94A3B8]">
                   {t}
@@ -440,12 +412,12 @@ export default function App() {
               ))}
             </div>
 
-            <div className="flex gap-4 pt-4 pointer-events-auto">
+            <div className="flex gap-4 pt-2">
               <a 
                 href={FEATURED_PROJECT.githubUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5"
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5 pointer-events-auto"
               >
                 <span>Codebase</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -454,7 +426,7 @@ export default function App() {
                 href={FEATURED_PROJECT.liveUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-secondary"
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-secondary pointer-events-auto"
               >
                 Live Demo
               </a>
@@ -462,27 +434,27 @@ export default function App() {
           </div>
         </div>
 
-        {/* ================================= SCENE 4: PROJECT 2 PROFILER ================================= */}
+        {/* ================================= SCENE 4: CASE 2 (Desktop scroll overlays) ================================= */}
         <div 
           ref={project2Ref}
-          className="absolute inset-0 w-full h-full bg-[#0F0D16] flex flex-col justify-center px-8 sm:px-16 z-30 opacity-0 pointer-events-none"
+          className="absolute inset-0 w-full h-full bg-[#0F0D16] flex flex-col justify-center px-6 sm:px-16 z-20 opacity-0 pointer-events-none hidden lg:flex"
         >
           <div className="absolute inset-0 bg-[#0B0912] opacity-60"></div>
-          <div className="relative z-10 max-w-4xl space-y-6">
-            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">02 / CASE CODEBASE</span>
-            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight leading-none uppercase">
+          <div className="relative z-10 max-w-4xl space-y-5">
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">02 / CASE</span>
+            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight uppercase leading-none">
               {ADDITIONAL_PROJECTS[0].title}
             </h2>
-            <p className="text-base sm:text-lg text-[#94A3B8] max-w-2xl font-light leading-relaxed">
+            <p className="text-base text-[#94A3B8] max-w-2xl font-light">
               {ADDITIONAL_PROJECTS[0].description}
             </p>
             
-            <div className="p-5 rounded-3xl bg-white/5 border border-white/5 max-w-xl text-xs font-mono text-[#94A3B8]">
-              <span className="text-[#4F9DFF] uppercase font-bold tracking-wider block mb-1">Business Impact Delivered</span>
+            <div className="p-4.5 rounded-2xl bg-white/5 border border-white/5 max-w-xl text-xs font-mono text-[#94A3B8]">
+              <span className="text-[#4F9DFF] uppercase font-bold tracking-wider block mb-1">Business Impact</span>
               {ADDITIONAL_PROJECTS[0].impact?.[0]}
             </div>
 
-            <div className="flex flex-wrap gap-2.5 pt-2">
+            <div className="flex flex-wrap gap-2">
               {ADDITIONAL_PROJECTS[0].tech.map((t) => (
                 <span key={t} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-[#94A3B8]">
                   {t}
@@ -490,12 +462,12 @@ export default function App() {
               ))}
             </div>
 
-            <div className="flex gap-4 pt-4 pointer-events-auto">
+            <div className="flex gap-4 pt-2">
               <a 
                 href={ADDITIONAL_PROJECTS[0].githubUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5"
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5 pointer-events-auto"
               >
                 <span>Codebase</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -504,7 +476,7 @@ export default function App() {
                 href={ADDITIONAL_PROJECTS[0].liveUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-secondary"
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-secondary pointer-events-auto"
               >
                 Live Demo
               </a>
@@ -512,27 +484,27 @@ export default function App() {
           </div>
         </div>
 
-        {/* ================================= SCENE 5: PROJECT 3 PROFILER ================================= */}
+        {/* ================================= SCENE 5: CASE 3 (Desktop scroll overlays) ================================= */}
         <div 
           ref={project3Ref}
-          className="absolute inset-0 w-full h-full bg-[#0C120E] flex flex-col justify-center px-8 sm:px-16 z-30 opacity-0 pointer-events-none"
+          className="absolute inset-0 w-full h-full bg-[#0C120E] flex flex-col justify-center px-6 sm:px-16 z-20 opacity-0 pointer-events-none hidden lg:flex"
         >
           <div className="absolute inset-0 bg-[#070D09] opacity-60"></div>
-          <div className="relative z-10 max-w-4xl space-y-6">
-            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">03 / CASE CODEBASE</span>
-            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight leading-none uppercase">
+          <div className="relative z-10 max-w-4xl space-y-5">
+            <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">03 / CASE</span>
+            <h2 className="text-4xl sm:text-6xl font-display font-extrabold text-white tracking-tight uppercase leading-none">
               {ADDITIONAL_PROJECTS[1].title}
             </h2>
-            <p className="text-base sm:text-lg text-[#94A3B8] max-w-2xl font-light leading-relaxed">
+            <p className="text-base text-[#94A3B8] max-w-2xl font-light">
               {ADDITIONAL_PROJECTS[1].description}
             </p>
             
-            <div className="p-5 rounded-3xl bg-white/5 border border-white/5 max-w-xl text-xs font-mono text-[#94A3B8]">
-              <span className="text-[#4F9DFF] uppercase font-bold tracking-wider block mb-1">Business Impact Delivered</span>
+            <div className="p-4.5 rounded-2xl bg-white/5 border border-white/5 max-w-xl text-xs font-mono text-[#94A3B8]">
+              <span className="text-[#4F9DFF] uppercase font-bold tracking-wider block mb-1">Business Impact</span>
               {ADDITIONAL_PROJECTS[1].impact?.[0]}
             </div>
 
-            <div className="flex flex-wrap gap-2.5 pt-2">
+            <div className="flex flex-wrap gap-2">
               {ADDITIONAL_PROJECTS[1].tech.map((t) => (
                 <span key={t} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-[#94A3B8]">
                   {t}
@@ -540,12 +512,12 @@ export default function App() {
               ))}
             </div>
 
-            <div className="flex gap-4 pt-4 pointer-events-auto">
+            <div className="flex gap-4 pt-2">
               <a 
                 href={ADDITIONAL_PROJECTS[1].githubUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5"
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-primary flex items-center gap-1.5 pointer-events-auto"
               >
                 <span>Codebase</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -554,7 +526,7 @@ export default function App() {
                 href={ADDITIONAL_PROJECTS[1].liveUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-secondary"
+                className="px-6 py-2.5 text-xs uppercase tracking-wider font-bold btn-apple-secondary pointer-events-auto"
               >
                 Live Demo
               </a>
@@ -564,8 +536,98 @@ export default function App() {
 
       </div>
 
-      {/* ================================= SCENE 6: HORIZONTAL GALLERY OF ADDITIONAL PROJECTS ================================= */}
-      <div id="projects-root" ref={horizontalSectionRef} className="h-screen w-full relative overflow-hidden bg-[#0A0A0A] z-20">
+      {/* ================================= MOBILE PROJECTS LIST FALLBACK ================================= */}
+      {/* Visible only on mobile/tablet viewports to prevent scroll overlaps and clipping */}
+      <section className="block lg:hidden py-24 px-6 space-y-10 z-20 relative bg-[#020205] scroll-mt-20" id="mobile-projects">
+        <div className="space-y-2 text-center">
+          <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Projects Directory ]</span>
+          <h2 className="text-3xl font-bold font-display text-white">System Cases</h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8">
+          {allProjects.map((proj) => (
+            <div key={proj.id} className="spatial-glass p-6 space-y-5">
+              <div>
+                <h3 className="text-lg font-bold text-white font-display uppercase">{proj.title}</h3>
+                <p className="text-xs text-[#94A3B8] font-light leading-relaxed mt-2">{proj.description}</p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 text-xs text-[#94A3B8]">
+                <span className="text-[#4F9DFF] font-mono block uppercase text-[9px] font-bold">Business Impact</span>
+                <p className="mt-0.5">{proj.impact?.[0]}</p>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {proj.tech.map((t) => (
+                  <span key={t} className="px-2.5 py-0.5 rounded-full bg-white/5 text-[9px] font-mono text-[#94A3B8]">
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-4 pt-2">
+                {proj.githubUrl && (
+                  <a href={proj.githubUrl} target="_blank" rel="noreferrer" className="text-xs text-[#4F9DFF] font-mono">
+                    Codebase
+                  </a>
+                )}
+                {proj.liveUrl && (
+                  <a href={proj.liveUrl} target="_blank" rel="noreferrer" className="text-xs text-[#4F9DFF] font-mono">
+                    Live Demo
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ================================= ABOUT SECTION ================================= */}
+      <section id="about" className="py-24 sm:py-32 w-full max-w-5xl mx-auto px-6 relative z-20 scroll-mt-28">
+        <div className="space-y-2 text-center max-w-2xl mx-auto">
+          <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Profiler Overview ]</span>
+          <h2 className="text-3xl sm:text-4xl font-display font-bold">About Me</h2>
+        </div>
+
+        <div className="spatial-glass p-6 sm:p-12 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center mt-10">
+          <div className="md:col-span-4 flex justify-center">
+            <div className="w-32 h-32 rounded-full border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden group">
+              <Database className="w-12 h-12 text-[#4F9DFF]/80 group-hover:scale-110 transition-transform duration-500 animate-float" />
+            </div>
+          </div>
+
+          <div className="md:col-span-8 space-y-5">
+            <div>
+              <p className="text-lg font-bold font-display text-white">Sai Krishna Mittapelli</p>
+              <p className="text-xs sm:text-sm text-[#94A3B8] font-light leading-relaxed mt-2">
+                {PERSONAL_INFO.about.passion}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/5 text-xs">
+              <div className="space-y-0.5">
+                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Education</span>
+                <span className="text-white font-light block leading-snug">{PERSONAL_INFO.about.education}</span>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Location</span>
+                <span className="text-white font-light">Hyderabad, Telangana, India</span>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Specialization</span>
+                <span className="text-white font-light">{PERSONAL_INFO.about.specialization}</span>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Availability</span>
+                <span className="text-emerald-400 font-medium">Open for Opportunities (2026)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================= SCENE 6: DESKTOP HORIZONTAL GALLERY ================================= */}
+      <div id="projects-root" ref={horizontalSectionRef} className="h-screen w-full relative overflow-hidden bg-[#020205] z-20 hidden lg:block">
         <div className="absolute top-12 left-12 z-30">
           <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Slide Telemetry ]</span>
           <h2 className="text-3xl font-bold font-display text-white mt-1">Additional Deployments</h2>
@@ -578,11 +640,11 @@ export default function App() {
           {allProjects.map((proj, idx) => (
             <div 
               key={idx}
-              className="spatial-glass p-8 w-[420px] shrink-0 space-y-6 hover:border-[#4F9DFF]/25 transition-all duration-300 flex flex-col justify-between h-[520px]"
+              className="spatial-glass p-8 w-[400px] shrink-0 space-y-6 hover:border-[#4F9DFF]/25 transition-all duration-300 flex flex-col justify-between h-[480px]"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                  <span className="text-[10px] font-mono text-[#94A3B8] uppercase">System case index 0{idx + 1}</span>
+                  <span className="text-[10px] font-mono text-[#94A3B8] uppercase">System Case index 0{idx + 1}</span>
                   <span className="text-[10px] font-mono text-[#4F9DFF] uppercase">{proj.metrics?.[0]?.value}</span>
                 </div>
                 
@@ -629,68 +691,22 @@ export default function App() {
         </div>
       </div>
 
-      {/* ================================= SCENE 2 & ABOUT COMBINED PROFILE ================================= */}
-      <section id="about" className="py-32 w-full max-w-5xl mx-auto px-6 relative z-20 scroll-mt-28">
-        <div className="space-y-2 text-center max-w-2xl mx-auto">
-          <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Profiler Overview ]</span>
-          <h2 className="text-3xl sm:text-4xl font-display font-bold">About Me</h2>
-        </div>
-
-        <div className="spatial-glass p-8 sm:p-12 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center mt-12">
-          {/* Profile emblem */}
-          <div className="md:col-span-4 flex justify-center">
-            <div className="w-40 h-40 rounded-full border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden group">
-              <Database className="w-16 h-16 text-[#4F9DFF]/80 group-hover:scale-110 transition-transform duration-500 animate-float" />
-            </div>
-          </div>
-
-          {/* About context */}
-          <div className="md:col-span-8 space-y-6">
-            <div>
-              <p className="text-lg font-bold font-display text-white">Sai Krishna Mittapelli</p>
-              <p className="text-sm text-[#94A3B8] font-light leading-relaxed mt-2">
-                {PERSONAL_INFO.about.passion}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/5 text-sm">
-              <div className="space-y-0.5">
-                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Education</span>
-                <span className="text-white font-light block leading-snug">{PERSONAL_INFO.about.education}</span>
-              </div>
-              <div className="space-y-0.5">
-                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Location</span>
-                <span className="text-white font-light">Hyderabad, Telangana, India</span>
-              </div>
-              <div className="space-y-0.5">
-                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Specialization</span>
-                <span className="text-white font-light">{PERSONAL_INFO.about.specialization}</span>
-              </div>
-              <div className="space-y-0.5">
-                <span className="text-[#94A3B8] text-[9px] font-mono block uppercase">Availability</span>
-                <span className="text-emerald-400 font-medium">Open for Opportunities (2026)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================================= SCENE 7: SKILLS FLOATING SPACE ================================= */}
-      <section id="skills" ref={skillsSectionRef} className="py-32 w-full max-w-5xl mx-auto px-6 relative z-20 scroll-mt-28">
+      {/* ================================= SKILLS SECTION ================================= */}
+      <section id="skills" className="py-24 sm:py-32 w-full max-w-5xl mx-auto px-6 relative z-20 scroll-mt-28">
         <div className="space-y-2 text-center max-w-2xl mx-auto">
           <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Tooling Coordinates ]</span>
           <h2 className="text-3xl sm:text-4xl font-display font-bold">Skills Repertoire</h2>
         </div>
 
-        <p className="text-sm text-[#94A3B8] text-center max-w-md mx-auto font-light leading-relaxed mt-4">
+        <p className="text-xs sm:text-sm text-[#94A3B8] text-center max-w-md mx-auto font-light leading-relaxed mt-4">
           Floating chips mapping out program script metrics, database query aggregations, and business logic tools.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 max-w-3xl mx-auto mt-12">
+        <div className="flex flex-wrap items-center justify-center gap-3 max-w-3xl mx-auto mt-10">
           {skillChips.map((chip, idx) => (
             <div 
               key={idx}
-              className="px-5 py-3 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] hover:scale-105 transition-all duration-300 font-mono text-xs font-semibold cursor-default text-white"
+              className="px-4 py-2.5 rounded-full bg-white/5 border border-white/10 hover:border-[#4F9DFF]/30 hover:text-[#4F9DFF] hover:scale-105 transition-all duration-300 font-mono text-xs font-semibold cursor-default text-white"
             >
               <span className="text-[8px] text-[#94A3B8] font-mono uppercase block -mt-1 mb-0.5">{chip.category}</span>
               <span>{chip.name}</span>
@@ -699,25 +715,24 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================================= SCENE 8: EXPERIENCE TIMELINE ================================= */}
-      <section id="experience" className="py-32 w-full max-w-4xl mx-auto px-6 relative z-20 scroll-mt-28">
+      {/* ================================= EXPERIENCE SECTION ================================= */}
+      <section id="experience" className="py-24 sm:py-32 w-full max-w-4xl mx-auto px-6 relative z-20 scroll-mt-28">
         <div className="space-y-2 text-center max-w-2xl mx-auto">
           <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Apple Timeline ]</span>
           <h2 className="text-3xl sm:text-4xl font-display font-bold">Experience</h2>
         </div>
 
-        <div className="relative mt-16 pl-8 border-l border-white/5 space-y-12 py-2">
-          {/* Scroll triggered drawing rail indicator */}
+        <div className="relative mt-12 pl-6 sm:pl-8 border-l border-white/5 space-y-10 py-2">
+          {/* Timeline rail draws itself on desktop */}
           <div 
             ref={timelineRailRef}
             className="absolute left-0 top-0 w-[2px] bg-[#4F9DFF] shadow-[0_0_12px_#4F9DFF] z-10"
-            style={{ height: '0%' }}
+            style={{ height: '100%' }}
           ></div>
 
-          {TIMELINE_DATA.map((step, idx) => (
-            <div key={step.id} className="relative group space-y-4">
-              {/* Dot indicator */}
-              <div className="absolute -left-[39px] top-1.5 w-4 h-4 rounded-full bg-black border-2 border-[#4F9DFF] group-hover:bg-[#4F9DFF] transition-colors duration-300 z-20"></div>
+          {TIMELINE_DATA.map((step) => (
+            <div key={step.id} className="relative group space-y-3">
+              <div className="absolute -left-[30px] sm:-left-[37px] top-1.5 w-3.5 h-3.5 rounded-full bg-black border border-[#4F9DFF] group-hover:bg-[#4F9DFF] transition-colors duration-300 z-20"></div>
 
               <div className="space-y-1">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
@@ -726,7 +741,7 @@ export default function App() {
                   </span>
                   <span className="text-xs text-[#94A3B8] font-mono">{step.duration}</span>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold font-display text-white">
+                <h3 className="text-lg font-bold font-display text-white">
                   {step.title}
                 </h3>
                 <span className="text-xs font-semibold text-[#94A3B8] block">{step.subtitle}</span>
@@ -736,9 +751,9 @@ export default function App() {
                 {step.description}
               </p>
 
-              <ul className="space-y-2">
+              <ul className="space-y-1.5">
                 {step.milestones.map((ms, index) => (
-                  <li key={index} className="flex items-start gap-2.5 text-xs text-[#94A3B8] font-light leading-normal">
+                  <li key={index} className="flex items-start gap-2 text-xs text-[#94A3B8] font-light leading-normal">
                     <CheckCircle className="w-4 h-4 text-[#4F9DFF] flex-shrink-0 mt-0.5" />
                     <span>{ms}</span>
                   </li>
@@ -749,18 +764,18 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================================= SCENE 9: CERTIFICATES SLIDER ================================= */}
-      <section id="certifications" className="py-32 w-full max-w-5xl mx-auto px-6 relative z-20 scroll-mt-28">
+      {/* ================================= CERTIFICATIONS SECTION ================================= */}
+      <section id="certifications" className="py-24 sm:py-32 w-full max-w-5xl mx-auto px-6 relative z-20 scroll-mt-28">
         <div className="space-y-2 text-center max-w-2xl mx-auto">
           <span className="text-[#4F9DFF] font-mono text-xs tracking-widest uppercase block">[ Verified Badges ]</span>
           <h2 className="text-3xl sm:text-4xl font-display font-bold">Certifications</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
           {CERTIFICATIONS.map((cert) => (
             <div 
               key={cert.id}
-              className="spatial-glass p-6 flex flex-col justify-between hover:border-[#4F9DFF]/25 hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden"
+              className="spatial-glass p-5 flex flex-col justify-between hover:border-[#4F9DFF]/25 hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden"
             >
               <div className="space-y-4">
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#4F9DFF]">
@@ -768,14 +783,14 @@ export default function App() {
                 </div>
                 <div className="space-y-1">
                   <span className="text-[9px] font-mono text-[#94A3B8] uppercase block">{cert.issuer}</span>
-                  <h4 className="text-xs sm:text-sm font-bold text-white font-display leading-snug group-hover:text-[#4F9DFF] transition-colors">
+                  <h4 className="text-xs font-bold text-white font-display leading-snug group-hover:text-[#4F9DFF] transition-colors">
                     {cert.name}
                   </h4>
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-[#94A3B8]">
-                <span>Secured: {cert.date}</span>
+              <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-[#94A3B8]">
+                <span>{cert.date}</span>
                 {cert.credentialUrl && (
                   <a 
                     href={cert.credentialUrl}
@@ -793,12 +808,12 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================================= SCENE 10: CONTACT & FOOTER SECTION ================================= */}
-      <section id="contact" className="py-32 w-full max-w-3xl mx-auto px-6 relative z-20 scroll-mt-28">
-        <div className="spatial-glass p-8 sm:p-12 text-center space-y-8 relative overflow-hidden group">
+      {/* ================================= CONTACT & FOOTER SECTION ================================= */}
+      <section id="contact" className="py-24 w-full max-w-3xl mx-auto px-6 relative z-20 scroll-mt-28">
+        <div className="spatial-glass p-6 sm:p-12 text-center space-y-8 relative overflow-hidden group">
           <div className="space-y-3">
-            <h3 className="text-2xl sm:text-3xl font-bold font-display text-white">Let&apos;s build something data-driven together.</h3>
-            <p className="text-sm text-[#94A3B8] leading-relaxed max-w-xl mx-auto font-light">
+            <h3 className="text-2xl font-bold font-display text-white">Let&apos;s build something data-driven together.</h3>
+            <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed max-w-xl mx-auto font-light">
               Available for full-time Data Analyst roles, Python database scraper automation, and high-fidelity Power BI reporting environments.
             </p>
           </div>
@@ -825,7 +840,7 @@ export default function App() {
                 <Phone className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-[8px] text-[#94A3B8] block uppercase">Mobile telecommunication</span>
+                <span className="text-[8px] text-[#94A3B8] block uppercase">Mobile port</span>
                 <span className="text-xs text-white block">+91 81251 55568</span>
               </div>
             </a>
@@ -869,8 +884,8 @@ export default function App() {
       </section>
 
       {/* ================================= FOOTER ================================= */}
-      <footer className="border-t border-white/5 bg-[#020205] py-12 relative z-20">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <footer className="border-t border-white/5 bg-[#020205] py-10 relative z-20">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-[#4F9DFF]/10 border border-[#4F9DFF]/20 flex items-center justify-center">
               <Database className="w-3.5 h-3.5 text-[#4F9DFF]" />
